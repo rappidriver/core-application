@@ -1,0 +1,2 @@
+# Package for domain value objects
+# Value objects should be immutable and represent domain concepts

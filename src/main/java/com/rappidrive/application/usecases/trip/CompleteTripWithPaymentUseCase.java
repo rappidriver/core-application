@@ -1,0 +1,151 @@
+package com.rappidrive.application.usecases.trip;
+
+import com.rappidrive.application.ports.input.CompleteTripWithPaymentInputPort;
+import com.rappidrive.application.ports.input.payment.CalculateFareInputPort;
+import com.rappidrive.application.ports.input.payment.ProcessPaymentInputPort;
+import com.rappidrive.application.ports.output.DistanceCalculationPort;
+import com.rappidrive.application.ports.output.FareRepositoryPort;
+import com.rappidrive.application.ports.output.TripRepositoryPort;
+import com.rappidrive.domain.entities.Fare;
+import com.rappidrive.domain.entities.Payment;
+import com.rappidrive.domain.entities.Trip;
+import com.rappidrive.domain.enums.VehicleType;
+import com.rappidrive.domain.exceptions.TripNotFoundException;
+import com.rappidrive.domain.services.TripCompletionService;
+
+import java.time.LocalDateTime;
+
+/**
+ * Use case for completing a trip with automatic fare calculation and payment processing.
+ * Orchestrates the entire completion workflow:
+ * 1. Validates trip state
+ * 2. Calculates actual distance and duration
+ * 3. Calculates fare
+ * 4. Processes payment
+ * 5. Updates trip
+ */
+public class CompleteTripWithPaymentUseCase implements CompleteTripWithPaymentInputPort {
+    
+    private final TripRepositoryPort tripRepository;
+    private final FareRepositoryPort fareRepository;
+    private final DistanceCalculationPort distanceCalculation;
+    private final CalculateFareInputPort calculateFare;
+    private final ProcessPaymentInputPort processPayment;
+    private final TripCompletionService completionService;
+    
+    public CompleteTripWithPaymentUseCase(
+            TripRepositoryPort tripRepository,
+            FareRepositoryPort fareRepository,
+            DistanceCalculationPort distanceCalculation,
+            CalculateFareInputPort calculateFare,
+            ProcessPaymentInputPort processPayment,
+            TripCompletionService completionService) {
+        this.tripRepository = tripRepository;
+        this.fareRepository = fareRepository;
+        this.distanceCalculation = distanceCalculation;
+        this.calculateFare = calculateFare;
+        this.processPayment = processPayment;
+        this.completionService = completionService;
+    }
+    
+    @Override
+    public TripCompletionResult execute(CompleteTripWithPaymentCommand command) {
+        // 1. Retrieve trip
+        Trip trip = tripRepository.findById(command.tripId())
+            .orElseThrow(() -> new TripNotFoundException(command.tripId()));
+        
+        // 2. Validate trip can be completed
+        completionService.validateCanComplete(trip, command.dropoffLocation());
+        
+        // Check if fare already exists (idempotency)
+        if (fareRepository.existsByTripId(trip.getId().getValue())) {
+            return handleExistingCompletion(trip);
+        }
+        
+        // 3. Calculate actual distance using PostGIS
+        double actualDistanceKm = distanceCalculation.calculateDistance(
+            trip.getOrigin(),
+            command.dropoffLocation()
+        );
+        
+        // Ensure minimum distance
+        actualDistanceKm = completionService.calculateActualDistance(
+            trip.getOrigin(),
+            command.dropoffLocation()
+        );
+        
+        // 4. Calculate actual duration
+        int actualDurationMinutes = completionService.calculateActualDuration(
+            trip.getStartedAt().orElseThrow()
+        );
+        
+        // 5. Calculate fare
+        Fare fare = calculateFare.execute(
+            new CalculateFareInputPort.CalculateFareCommand(
+                trip.getId().getValue(),
+                trip.getTenantId(),
+                actualDistanceKm,
+                actualDurationMinutes,
+                VehicleType.SEDAN, // TODO: Get from driver's vehicle
+                LocalDateTime.now()
+            )
+        );
+        
+        // 6. Save fare
+        fare = fareRepository.save(fare);
+        
+        // 7. Process payment
+        Payment payment;
+        boolean paymentSuccessful;
+        String failureReason = null;
+        
+        try {
+            payment = processPayment.execute(
+                new ProcessPaymentInputPort.ProcessPaymentCommand(
+                    trip.getId().getValue(),
+                    command.paymentMethod()
+                )
+            );
+            
+            paymentSuccessful = payment.getStatus().name().equals("COMPLETED");
+            if (!paymentSuccessful && payment.getFailureReason() != null && !payment.getFailureReason().isBlank()) {
+                failureReason = payment.getFailureReason();
+            }
+        } catch (Exception e) {
+            // Payment failed - create failed payment record
+            throw e; // For now, propagate exception
+        }
+        
+        // 8. Validate fare and payment consistency
+        completionService.validateFareAndPayment(fare, payment);
+        
+        // 9. Complete trip with fare and payment
+        trip.completeWithPayment(fare, payment);
+        
+        // 10. Save updated trip
+        trip = tripRepository.save(trip);
+        
+        return new TripCompletionResult(
+            trip,
+            fare,
+            payment,
+            paymentSuccessful,
+            failureReason
+        );
+    }
+    
+    /**
+     * Handles case where trip was already completed (idempotency).
+     */
+    private TripCompletionResult handleExistingCompletion(Trip trip) {
+        // Retrieve existing fare and payment
+        Fare fare = fareRepository.findByTripId(trip.getId().getValue())
+            .orElseThrow(() -> new IllegalStateException("Fare not found for completed trip"));
+        
+        // For now, return existing completion
+        // In production, might want to retrieve payment as well
+        throw new IllegalStateException(
+            "Trip " + trip.getId() + " has already been completed"
+        );
+    }
+}

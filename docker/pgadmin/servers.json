@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "RappiDrive PostgreSQL",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "rappidrive_dev",
+      "Username": "rappidrive",
+      "SSLMode": "prefer",
+      "PassFile": "/pgpass"
+    }
+  }
+}

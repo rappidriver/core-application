@@ -1,0 +1,2 @@
+# Package for JPA entities and repository implementations
+# JPA entities should never leak to domain layer

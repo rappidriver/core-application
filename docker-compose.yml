@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: rappidrive-postgres
+    environment:
+      POSTGRES_DB: rappidrive_dev
+      POSTGRES_USER: rappidrive
+      POSTGRES_PASSWORD: rappidrive_dev_password
+      POSTGRES_INITDB_ARGS: '--encoding=UTF-8'
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - rappidrive-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rappidrive -d rappidrive_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: rappidrive-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@rappidrive.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json
+      - ./docker/pgadmin/pgpass:/pgpass
+    networks:
+      - rappidrive-network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  rappidrive-network:
+    driver: bridge

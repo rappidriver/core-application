@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    # Use test database - credentials from docker-compose.yml
+    url: jdbc:postgresql://localhost:5432/rappidrive_dev
+    username: rappidrive
+    password: rappidrive_dev_password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    clean-disabled: true
+
+  sql:
+    init:
+      mode: never
+
+logging:
+  level:
+    root: WARN
+    com.rappidrive: DEBUG
+    org.springframework.web: INFO
+    org.flywaydb: INFO
+
