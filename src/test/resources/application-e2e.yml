@@ -1,9 +1,9 @@
 spring:
   datasource:
-    # Use test database - credentials from docker-compose.yml
-    url: jdbc:postgresql://localhost:5432/rappidrive_dev
-    username: rappidrive
-    password: rappidrive_dev_password
+    # Use test database - supports both local docker-compose and CI environments
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/rappidrive_dev}
+    username: ${SPRING_DATASOURCE_USERNAME:rappidrive}
+    password: ${SPRING_DATASOURCE_PASSWORD:rappidrive_dev_password}
     driver-class-name: org.postgresql.Driver
 
   jpa:
