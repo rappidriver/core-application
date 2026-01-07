@@ -37,9 +37,14 @@ src/main/java/com/rappidrive/
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Java 17+
+- Java 21+ (LTS)
 - Maven 3.8+
 - Docker & Docker Compose (for PostgreSQL)
+
+**Installing Java 21:**
+- macOS: `brew install openjdk@21`
+- SDKMAN: `sdk install java 21-tem`
+- Verify: `java -version` (should show 21.x.x)
 
 ### 1. Start Database
 ```bash
