@@ -22,8 +22,11 @@ import com.rappidrive.domain.services.StandardFareCalculator;
 import com.rappidrive.domain.events.DomainEventPublisher;
 import com.rappidrive.domain.services.RatingValidationService;
 import com.rappidrive.domain.services.TripCompletionService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.concurrent.ExecutorService;
 
 /**
  * Configuration class for wiring use cases (application layer).
@@ -56,8 +59,10 @@ public class UseCaseConfiguration {
     }
     
     @Bean
-    public FindAvailableDriversInputPort findAvailableDriversUseCase(DriverGeoQueryPort driverGeoQueryPort) {
-        return new FindAvailableDriversUseCase(driverGeoQueryPort);
+    public FindAvailableDriversInputPort findAvailableDriversUseCase(
+            DriverGeoQueryPort driverGeoQueryPort,
+            @Qualifier("virtualThreadExecutor") ExecutorService executor) {
+        return new FindAvailableDriversUseCase(driverGeoQueryPort, executor);
     }
     
     // Passenger Use Cases
