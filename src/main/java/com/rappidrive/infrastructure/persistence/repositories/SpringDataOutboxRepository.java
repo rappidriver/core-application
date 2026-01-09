@@ -14,4 +14,8 @@ public interface SpringDataOutboxRepository extends JpaRepository<OutboxEventJpa
 
     @Query("SELECT o FROM OutboxEventJpaEntity o WHERE o.status = 'PENDING' AND (o.nextAttemptAt IS NULL OR o.nextAttemptAt <= :now) ORDER BY o.createdAt")
     List<OutboxEventJpaEntity> findPending(@Param("now") LocalDateTime now, Pageable pageable);
+
+    // Native query for SKIP LOCKED (Postgres only)
+    @Query(value = "SELECT * FROM outbox_event WHERE status = 'PENDING' AND (next_attempt_at IS NULL OR next_attempt_at <= now()) ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT :limit", nativeQuery = true)
+    List<OutboxEventJpaEntity> findPendingForUpdate(@Param("limit") int limit);
 }

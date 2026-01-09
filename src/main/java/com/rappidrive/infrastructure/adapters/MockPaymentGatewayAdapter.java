@@ -2,6 +2,9 @@ package com.rappidrive.infrastructure.adapters;
 
 import com.rappidrive.application.ports.output.PaymentGatewayPort;
 import com.rappidrive.domain.valueobjects.Money;
+import com.rappidrive.domain.exceptions.PaymentServiceUnavailableException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -32,6 +35,8 @@ public class MockPaymentGatewayAdapter implements PaymentGatewayPort {
     private final Random random = new Random();
     
     @Override
+    @CircuitBreaker(name = "paymentGateway", fallbackMethod = "paymentFallback")
+    @Retry(name = "paymentGateway")
     public PaymentGatewayResponse processPayment(PaymentGatewayRequest request) {
         logger.info("Processing payment: amount={}, method={}, description={}",
             request.amount(), request.paymentMethod(), request.description());
@@ -58,6 +63,11 @@ public class MockPaymentGatewayAdapter implements PaymentGatewayPort {
                 failureReason
             );
         }
+    }
+    
+    public PaymentGatewayResponse paymentFallback(PaymentGatewayRequest request, Throwable t) {
+        logger.error("Payment service unavailable: {}", t.getMessage());
+        throw new PaymentServiceUnavailableException("Payment service unavailable", t);
     }
     
     @Override

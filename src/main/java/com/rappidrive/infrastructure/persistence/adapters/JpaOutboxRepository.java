@@ -73,6 +73,13 @@ public class JpaOutboxRepository implements OutboxRepositoryPort {
         return repository.findById(id).map(this::toDomain);
     }
 
+    // Não sobrescreve interface, é método utilitário
+    public List<OutboxEvent> findPendingForUpdate(int limit) {
+        return repository.findPendingForUpdate(limit).stream()
+            .map(this::toDomain)
+            .collect(Collectors.toList());
+    }
+
     private OutboxEvent toDomain(OutboxEventJpaEntity e) {
         return new OutboxEvent(
             e.getId(),
