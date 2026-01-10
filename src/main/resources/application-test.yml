@@ -1,9 +1,9 @@
 spring:
   datasource:
-    # Testcontainers will override these
-    url: jdbc:postgresql://localhost:5432/rappidrive_test
-    username: test
-    password: test
+    # Use local Docker Postgres from docker-compose for integration tests
+    url: jdbc:postgresql://localhost:5432/rappidrive_dev
+    username: rappidrive
+    password: rappidrive_dev_password
     driver-class-name: org.postgresql.Driver
 
   jpa:

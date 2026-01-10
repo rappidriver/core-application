@@ -1,6 +1,6 @@
 package com.rappidrive.domain.exceptions;
 
-public class PaymentServiceUnavailableException extends RuntimeException {
+public class PaymentServiceUnavailableException extends DomainException {
     public PaymentServiceUnavailableException(String message) {
         super(message);
     }

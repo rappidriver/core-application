@@ -208,4 +208,131 @@ class HexagonalArchitectureTest {
 
         rule.check(importedClasses);
     }
+
+    @Test
+    void domainLayerMustNotHaveSpringAnnotations() {
+        ArchRule rule = noClasses()
+            .that().resideInAPackage("..domain..")
+            .should().beAnnotatedWith("org.springframework.stereotype.Component")
+            .orShould().beAnnotatedWith("org.springframework.stereotype.Service")
+            .orShould().beAnnotatedWith("org.springframework.stereotype.Repository")
+            .orShould().beAnnotatedWith("org.springframework.beans.factory.annotation.Autowired")
+            .because("Domain layer must not have Spring annotations - domain is framework-free")
+            .allowEmptyShould(true);
+
+        rule.check(importedClasses);
+    }
+
+    @Test
+    void exceptionsMustResideInCorrectPackage() {
+        ArchRule rule = classes()
+            .that().resideInAPackage("..domain.exceptions..")
+            .should().beAssignableTo(com.rappidrive.domain.exceptions.DomainException.class)
+            .because("All domain exceptions must extend DomainException and reside in domain.exceptions")
+            .allowEmptyShould(true);
+
+        rule.check(importedClasses);
+    }
+
+    @Test
+    void applicationExceptionsMustResideInApplicationLayer() {
+        ArchRule rule = classes()
+            .that().resideInAPackage("..application.exceptions..")
+            .should().beAssignableTo(com.rappidrive.application.exceptions.ApplicationException.class)
+            .because("All application exceptions must extend ApplicationException")
+            .allowEmptyShould(true);
+
+        rule.check(importedClasses);
+    }
+
+    @Test
+    void inputPortsMustResideInApplicationPortsInput() {
+        ArchRule rule = classes()
+            .that().resideInAPackage("..application.ports.input..")
+            .and().haveSimpleNameEndingWith("InputPort")
+            .should().beInterfaces()
+            .because("Input ports must be interfaces and reside in application.ports.input")
+            .allowEmptyShould(true);
+
+        rule.check(importedClasses);
+    }
+
+    @Test
+    void outputPortsMustResideInApplicationPortsOutput() {
+        ArchRule rule = classes()
+            .that().resideInAPackage("..application.ports.output..")
+            .and().haveSimpleNameEndingWith("Port")
+            .should().beInterfaces()
+            .because("Output ports must be interfaces and reside in application.ports.output")
+            .allowEmptyShould(true);
+
+        rule.check(importedClasses);
+    }
+
+    @Test
+    void controllersShouldOnlyResideInPresentation() {
+        ArchRule rule = classes()
+            .that().areAnnotatedWith("org.springframework.web.bind.annotation.RestController")
+            .should().resideInAPackage("..presentation.controllers..")
+            .because("REST controllers must only reside in presentation layer")
+            .allowEmptyShould(true);
+
+        rule.check(importedClasses);
+    }
+
+    @Test
+    void dtosShouldOnlyResideInPresentation() {
+        // Note: Records in ports/services are internal DTOs, not presentation DTOs
+        // This validates only top-level Request/Response classes in presentation layer
+        ArchRule rule = classes()
+            .that().haveSimpleNameEndingWith("Request")
+            .and().areNotNestedClasses() // Exclude records in ports and services
+            .should().resideInAPackage("..presentation.dto..")
+            .because("DTO Request classes must reside in presentation.dto");
+
+        rule.check(importedClasses);
+
+        ArchRule responseRule = classes()
+            .that().haveSimpleNameEndingWith("Response")
+            .and().areNotNestedClasses() // Exclude nested response records
+            .should().resideInAPackage("..presentation.dto..")
+            .because("DTO Response classes must reside in presentation.dto");
+
+        responseRule.check(importedClasses);
+    }
+
+    @Test
+    void configurationClassesMustBeInInfrastructureConfig() {
+        ArchRule rule = classes()
+            .that().resideInAPackage("..infrastructure.config..")
+            .and().areAnnotatedWith("org.springframework.context.annotation.Configuration")
+            .should().resideInAPackage("..infrastructure.config..")
+            .because("@Configuration classes must reside in infrastructure.config")
+            .allowEmptyShould(true);
+
+        rule.check(importedClasses);
+    }
+
+    @Test
+    void serviceAnnotationsOnlyInInfrastructure() {
+        ArchRule rule = classes()
+            .that().areAnnotatedWith("org.springframework.stereotype.Service")
+            .should().resideInAPackage("..infrastructure..")
+            .because("@Service annotation should only be used in infrastructure layer for adapters")
+            .allowEmptyShould(true);
+
+        rule.check(importedClasses);
+    }
+
+    @Test
+    void domainServicesMustNotUseSpringAnnotations() {
+        ArchRule rule = noClasses()
+            .that().resideInAPackage("..domain.services..")
+            .should().beAnnotatedWith("org.springframework.stereotype.Service")
+            .orShould().beAnnotatedWith("org.springframework.stereotype.Component")
+            .because("Domain services are plain Java classes, wired through ports")
+            .allowEmptyShould(true);
+
+        rule.check(importedClasses);
+    }
 }

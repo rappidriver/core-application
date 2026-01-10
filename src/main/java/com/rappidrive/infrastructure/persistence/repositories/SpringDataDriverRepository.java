@@ -68,6 +68,6 @@ public interface SpringDataDriverRepository extends JpaRepository<DriverJpaEntit
         @Param("latitude") double latitude,
         @Param("longitude") double longitude,
         @Param("radiusMeters") double radiusMeters,
-        @Param("tenantId") TenantId tenantId
+        @Param("tenantId") java.util.UUID tenantId
     );
 }

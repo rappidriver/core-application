@@ -110,7 +110,7 @@ public class JpaDriverRepositoryAdapter implements DriverRepositoryPort, DriverG
                     pickupLocation.getLatitude(),
                     pickupLocation.getLongitude(),
                     radiusKm * 1000, // Convert km to meters for PostGIS
-                    tenantId
+                    tenantId.getValue()
                 );
             
             long durationMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime);
