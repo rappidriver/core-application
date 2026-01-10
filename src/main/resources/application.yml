@@ -25,6 +25,18 @@ spring:
     baseline-on-migrate: true
     locations: classpath:db/migration
 
+  scheduling:
+    pool:
+      size: 4
+      thread-name-prefix: rabbidrive-scheduler-
+
+outbox:
+  processor:
+    enabled: true
+    delay-ms: 1000
+    max-retries: 5
+    batch-size: 50
+
 server:
   port: 8080
   servlet:

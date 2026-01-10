@@ -45,9 +45,11 @@ public class JpaOutboxRepository implements OutboxRepositoryPort {
     @Override
     public void markSent(UUID id) {
         repository.findById(id).ifPresent(e -> {
-            e.setStatus("SENT");
-            e.setSentAt(LocalDateTime.now());
-            repository.save(e);
+            if (!"SENT".equals(e.getStatus())) {
+                e.setStatus("SENT");
+                e.setSentAt(LocalDateTime.now());
+                repository.save(e);
+            }
         });
     }
 

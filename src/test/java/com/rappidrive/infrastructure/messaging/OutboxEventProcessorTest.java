@@ -33,12 +33,12 @@ class OutboxEventProcessorTest {
         OutboxEvent event = new OutboxEvent(
                 UUID.randomUUID(), UUID.randomUUID(), "TRIP_CREATED", "{}", "PENDING", 0, null, LocalDateTime.now()
         );
-        when(outboxRepository.findPendingForUpdate(anyInt())).thenReturn(List.of(event));
+        when(outboxRepository.findPendingBatch(any(LocalDateTime.class), anyInt())).thenReturn(List.of(event));
 
         processor.processPendingEvents();
 
         verify(eventDispatcher, times(1)).dispatch(event.getId(), event.getEventType(), event.getPayload());
-        verify(outboxRepository, atLeastOnce()).save(any());
+        verify(outboxRepository, times(1)).markSent(event.getId());
         assertThat(MDC.get("correlationId")).isNull();
     }
 
@@ -47,14 +47,12 @@ class OutboxEventProcessorTest {
         OutboxEvent event = new OutboxEvent(
                 UUID.randomUUID(), UUID.randomUUID(), "TRIP_CREATED", "{}", "PENDING", 4, null, LocalDateTime.now()
         );
-        when(outboxRepository.findPendingForUpdate(anyInt())).thenReturn(List.of(event));
+        when(outboxRepository.findPendingBatch(any(LocalDateTime.class), anyInt())).thenReturn(List.of(event));
         doThrow(new RuntimeException("Dispatch error")).when(eventDispatcher).dispatch(event.getId(), event.getEventType(), event.getPayload());
 
         processor.processPendingEvents();
 
-        ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
-        verify(outboxRepository, atLeastOnce()).save(captor.capture());
-        assertThat(captor.getAllValues().stream().anyMatch(e -> e.getAttempts() >= 5)).isTrue();
+        verify(outboxRepository, times(1)).markFailed(event.getId());
         assertThat(MDC.get("correlationId")).isNull();
     }
 }

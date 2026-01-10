@@ -1,6 +1,8 @@
 package com.rappidrive.infrastructure.persistence.entities;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -18,7 +20,8 @@ public class OutboxEventJpaEntity {
     @Column(name = "event_type", nullable = false)
     private String eventType;
 
-    @Column(name = "payload", columnDefinition = "jsonb", nullable = false)
+    @Column(name = "payload", nullable = false)
+    @JdbcTypeCode(SqlTypes.JSON)
     private String payload;
 
     @Column(name = "status", nullable = false)
