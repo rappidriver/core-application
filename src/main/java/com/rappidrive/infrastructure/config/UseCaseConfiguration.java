@@ -7,6 +7,10 @@ import com.rappidrive.application.ports.input.payment.*;
 import com.rappidrive.application.ports.input.rating.*;
 import com.rappidrive.application.ports.input.trip.*;
 import com.rappidrive.application.ports.input.vehicle.*;
+import com.rappidrive.application.ports.input.ApproveDriverInputPort;
+import com.rappidrive.application.ports.input.RejectDriverInputPort;
+import com.rappidrive.application.ports.input.ListPendingApprovalsInputPort;
+import com.rappidrive.application.ports.input.SubmitDriverApprovalInputPort;
 import com.rappidrive.application.ports.input.CompleteTripWithPaymentInputPort;
 import com.rappidrive.application.ports.input.GetTripWithPaymentDetailsInputPort;
 import com.rappidrive.application.ports.output.*;
@@ -17,6 +21,7 @@ import com.rappidrive.application.usecases.payment.*;
 import com.rappidrive.application.usecases.rating.*;
 import com.rappidrive.application.usecases.trip.*;
 import com.rappidrive.application.usecases.vehicle.*;
+import com.rappidrive.application.usecases.approval.*;
 import com.rappidrive.domain.services.FareCalculator;
 import com.rappidrive.domain.services.StandardFareCalculator;
 import com.rappidrive.domain.events.DomainEventPublisher;
@@ -281,5 +286,37 @@ public class UseCaseConfiguration {
     @Bean
     public DomainEventPublisher domainEventPublisher() {
         return DomainEventPublisher.instance();
+    }
+
+    // Approval Use Cases
+    @Bean
+    public SubmitDriverApprovalInputPort submitDriverApprovalUseCase(
+            DriverApprovalRepositoryPort approvalRepository,
+            DriverRepositoryPort driverRepository) {
+        return new SubmitDriverApprovalUseCase(approvalRepository, driverRepository);
+    }
+
+    @Bean
+    public ListPendingApprovalsInputPort listPendingApprovalsUseCase(
+            DriverApprovalRepositoryPort approvalRepository,
+            AdminUserRepositoryPort adminRepository,
+            DriverRepositoryPort driverRepository) {
+        return new ListPendingApprovalsUseCase(approvalRepository, adminRepository, driverRepository);
+    }
+
+    @Bean
+    public ApproveDriverInputPort approveDriverUseCase(
+            DriverApprovalRepositoryPort approvalRepository,
+            AdminUserRepositoryPort adminRepository,
+            DriverRepositoryPort driverRepository) {
+        return new ApproveDriverUseCase(approvalRepository, adminRepository, driverRepository);
+    }
+
+    @Bean
+    public RejectDriverInputPort rejectDriverUseCase(
+            DriverApprovalRepositoryPort approvalRepository,
+            AdminUserRepositoryPort adminRepository,
+            DriverRepositoryPort driverRepository) {
+        return new RejectDriverUseCase(approvalRepository, adminRepository, driverRepository);
     }
 }

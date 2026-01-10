@@ -136,6 +136,8 @@ class HexagonalArchitectureTest {
             .orShould().implement(com.rappidrive.application.ports.output.PaymentGatewayPort.class)
             .orShould().implement(com.rappidrive.application.ports.output.RatingRepositoryPort.class)
             .orShould().implement(com.rappidrive.application.ports.output.NotificationRepositoryPort.class)
+            .orShould().implement(com.rappidrive.application.ports.output.DriverApprovalRepositoryPort.class)
+            .orShould().implement(com.rappidrive.application.ports.output.AdminUserRepositoryPort.class)
             .because("Repository adapters must implement port interfaces")
             .allowEmptyShould(true);
 
@@ -181,6 +183,10 @@ class HexagonalArchitectureTest {
             .orShould().implement(com.rappidrive.application.ports.input.notification.GetUserNotificationsInputPort.class)
             .orShould().implement(com.rappidrive.application.ports.input.notification.MarkNotificationAsReadInputPort.class)
             .orShould().implement(com.rappidrive.application.ports.input.notification.GetUnreadCountInputPort.class)
+            .orShould().implement(com.rappidrive.application.ports.input.ListPendingApprovalsInputPort.class)
+            .orShould().implement(com.rappidrive.application.ports.input.SubmitDriverApprovalInputPort.class)
+            .orShould().implement(com.rappidrive.application.ports.input.ApproveDriverInputPort.class)
+            .orShould().implement(com.rappidrive.application.ports.input.RejectDriverInputPort.class)
             .because("Use cases must implement their input port interfaces")
             .allowEmptyShould(true);
 
