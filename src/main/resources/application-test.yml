@@ -34,3 +34,7 @@ logging:
     com.rappidrive: DEBUG
     org.springframework.web: INFO
     org.flywaydb: INFO
+
+rappidrive:
+  security:
+    enabled: false

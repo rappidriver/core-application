@@ -2,6 +2,12 @@
 
 White-label ride-hailing platform (MVP) built with Hexagonal Architecture (Ports & Adapters).
 
+## 📚 Documentation
+
+- Mapa da documentação: [docs/INDEX.md](docs/INDEX.md)
+- Referência atual de domínio e arquitetura: [docs/HIST-2026-012.md](docs/HIST-2026-012.md)
+- Diagramas atualizados: [docs/HIST-2026-012-DIAGRAMS.md](docs/HIST-2026-012-DIAGRAMS.md)
+
 ## 🏗️ Architecture
 
 This project follows **Hexagonal Architecture** principles with strict separation of concerns:

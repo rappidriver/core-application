@@ -47,6 +47,10 @@ logging:
     root: INFO
     com.rappidrive: DEBUG
 
+rappidrive:
+  security:
+    enabled: true
+
 management:
   endpoints:
     web:
@@ -71,3 +75,7 @@ resilience4j:
       paymentGateway:
         maxAttempts: 3
         waitDuration: 2s
+
+security:
+  jwt:
+    secret: change-me-please-change-me-please-change-me-please

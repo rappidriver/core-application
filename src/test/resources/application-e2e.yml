@@ -31,3 +31,7 @@ logging:
     org.springframework.web: INFO
     org.flywaydb: INFO
 
+rappidrive:
+  security:
+    enabled: false
+
