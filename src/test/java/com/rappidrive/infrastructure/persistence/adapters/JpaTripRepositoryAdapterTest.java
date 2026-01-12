@@ -5,6 +5,7 @@ import com.rappidrive.domain.exceptions.TripConcurrencyException;
 import com.rappidrive.infrastructure.persistence.entities.TripJpaEntity;
 import com.rappidrive.infrastructure.persistence.mappers.TripMapper;
 import com.rappidrive.infrastructure.persistence.repositories.SpringDataTripRepository;
+import io.micrometer.tracing.Tracer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -22,6 +23,7 @@ class JpaTripRepositoryAdapterTest {
     private TripMapper mapper;
     private com.rappidrive.application.ports.output.OutboxRepositoryPort outboxRepository;
     private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+    private Tracer tracer;
     private JpaTripRepositoryAdapter adapter;
 
     @BeforeEach
@@ -30,7 +32,8 @@ class JpaTripRepositoryAdapterTest {
         mapper = mock(TripMapper.class);
         outboxRepository = mock(com.rappidrive.application.ports.output.OutboxRepositoryPort.class);
         objectMapper = mock(com.fasterxml.jackson.databind.ObjectMapper.class);
-        adapter = new JpaTripRepositoryAdapter(jpaRepository, mapper, outboxRepository, objectMapper);
+        tracer = mock(Tracer.class);
+        adapter = new JpaTripRepositoryAdapter(jpaRepository, mapper, outboxRepository, objectMapper, tracer);
     }
 
     @Test

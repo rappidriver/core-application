@@ -1,16 +1,23 @@
 package com.rappidrive.application.usecases.driver;
 
 import com.rappidrive.application.concurrency.ParallelExecutor;
+import com.rappidrive.application.metrics.DriverAssignmentAttemptStatus;
+import com.rappidrive.application.metrics.DriverAssignmentStage;
 import com.rappidrive.application.ports.input.driver.FindAvailableDriversCommand;
 import com.rappidrive.application.ports.input.driver.FindAvailableDriversInputPort;
+import com.rappidrive.application.ports.output.DriverAssignmentMetricsPort;
 import com.rappidrive.application.ports.output.DriverGeoQueryPort;
+import com.rappidrive.application.ports.output.TelemetryPort;
 import com.rappidrive.domain.entities.Driver;
 import com.rappidrive.domain.valueobjects.Location;
 import com.rappidrive.domain.valueobjects.SearchZone;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Use case for finding available drivers near a pickup location.
@@ -20,23 +27,45 @@ public class FindAvailableDriversUseCase implements FindAvailableDriversInputPor
     
     private final DriverGeoQueryPort driverGeoQueryPort;
     private final ExecutorService virtualThreadExecutor;
+    private final TelemetryPort telemetryPort;
+    private final DriverAssignmentMetricsPort metricsPort;
 
     public FindAvailableDriversUseCase(DriverGeoQueryPort driverGeoQueryPort,
-                                       ExecutorService virtualThreadExecutor) {
+                                       ExecutorService virtualThreadExecutor,
+                                       TelemetryPort telemetryPort,
+                                       DriverAssignmentMetricsPort metricsPort) {
         this.driverGeoQueryPort = driverGeoQueryPort;
         this.virtualThreadExecutor = virtualThreadExecutor;
+        this.telemetryPort = telemetryPort;
+        this.metricsPort = metricsPort;
     }
     
     @Override
     public List<Driver> execute(FindAvailableDriversCommand command) {
+        Map<String, String> attributes = telemetryAttributes(command);
+        return telemetryPort.traceUseCase("driver.search", attributes, () -> executeWithMetrics(command));
+    }
+
+    private List<Driver> executeWithMetrics(FindAvailableDriversCommand command) {
+        long startTime = System.nanoTime();
+        try {
+            List<Driver> drivers = performDriverSearch(command);
+            metricsPort.incrementAttempts(DriverAssignmentStage.SEARCH, DriverAssignmentAttemptStatus.SUCCESS);
+            return drivers;
+        } catch (RuntimeException ex) {
+            metricsPort.incrementAttempts(DriverAssignmentStage.SEARCH, DriverAssignmentAttemptStatus.ERROR);
+            throw ex;
+        } finally {
+            metricsPort.recordStageDuration(DriverAssignmentStage.SEARCH, elapsedMillis(startTime));
+        }
+    }
+
+    private List<Driver> performDriverSearch(FindAvailableDriversCommand command) {
         Location pickupLocation = command.pickupLocation();
         double radiusKm = command.radiusKm();
-        
-        // Divide search area into zones for parallel querying
         List<SearchZone> searchZones = divideIntoSearchZones(pickupLocation, radiusKm);
-        
+
         try {
-            // Execute parallel searches across all zones using CompletableFuture
             List<List<Driver>> zoneResults = ParallelExecutor.mapParallel(
                 searchZones,
                 zone -> driverGeoQueryPort.findAvailableDriversNearby(
@@ -46,15 +75,13 @@ public class FindAvailableDriversUseCase implements FindAvailableDriversInputPor
                 ),
                 virtualThreadExecutor
             );
-            
-            // Flatten results and filter by availability
+
             return zoneResults.stream()
                 .flatMap(List::stream)
-                .distinct() // Remove duplicates (drivers may appear in multiple zones)
+                .distinct()
                 .filter(Driver::isAvailableForRide)
-                .limit(10) // Return top 10 nearest drivers
+                .limit(10)
                 .toList();
-                
         } catch (Exception e) {
             throw new DriverSearchException("Failed to search for drivers in parallel", e);
         }
@@ -99,5 +126,17 @@ public class FindAvailableDriversUseCase implements FindAvailableDriversInputPor
         ));
         
         return zones;
+    }
+
+    private Map<String, String> telemetryAttributes(FindAvailableDriversCommand command) {
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put("stage", "driver.search");
+        attributes.put("tenantId", command.tenantId().asString());
+        attributes.put("tripId", command.tripId() != null ? command.tripId().toString() : "unknown");
+        return attributes;
+    }
+
+    private long elapsedMillis(long startNanos) {
+        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
     }
 }

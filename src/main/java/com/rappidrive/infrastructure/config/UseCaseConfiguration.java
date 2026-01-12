@@ -66,8 +66,10 @@ public class UseCaseConfiguration {
     @Bean
     public FindAvailableDriversInputPort findAvailableDriversUseCase(
             DriverGeoQueryPort driverGeoQueryPort,
-            @Qualifier("virtualThreadExecutor") ExecutorService executor) {
-        return new FindAvailableDriversUseCase(driverGeoQueryPort, executor);
+            @Qualifier("virtualThreadExecutor") ExecutorService executor,
+            TelemetryPort telemetryPort,
+            DriverAssignmentMetricsPort driverAssignmentMetricsPort) {
+        return new FindAvailableDriversUseCase(driverGeoQueryPort, executor, telemetryPort, driverAssignmentMetricsPort);
     }
     
     // Passenger Use Cases
@@ -86,8 +88,9 @@ public class UseCaseConfiguration {
     
     @Bean
     public CreateTripInputPort createTripUseCase(TripRepositoryPort tripRepository,
-                                                  PassengerRepositoryPort passengerRepository) {
-        return new CreateTripUseCase(tripRepository, passengerRepository);
+                                                  PassengerRepositoryPort passengerRepository,
+                                                  TelemetryPort telemetryPort) {
+        return new CreateTripUseCase(tripRepository, passengerRepository, telemetryPort);
     }
     
     @Bean
@@ -98,8 +101,10 @@ public class UseCaseConfiguration {
     @Bean
     public AssignDriverToTripInputPort assignDriverToTripUseCase(TripRepositoryPort tripRepository,
                                                                   DriverRepositoryPort driverRepository,
-                                                                  DomainEventPublisher eventPublisher) {
-        return new AssignDriverToTripUseCase(tripRepository, driverRepository, eventPublisher);
+                                                                  DomainEventPublisher eventPublisher,
+                                                                  TelemetryPort telemetryPort,
+                                                                  DriverAssignmentMetricsPort driverAssignmentMetricsPort) {
+        return new AssignDriverToTripUseCase(tripRepository, driverRepository, eventPublisher, telemetryPort, driverAssignmentMetricsPort);
     }
     
     @Bean
@@ -185,8 +190,9 @@ public class UseCaseConfiguration {
     @Bean
     public ProcessPaymentInputPort processPaymentUseCase(PaymentRepositoryPort paymentRepository,
                                                           PaymentGatewayPort paymentGateway,
-                                                          FareConfigurationRepositoryPort fareConfigRepository) {
-        return new ProcessPaymentUseCase(paymentRepository, paymentGateway, fareConfigRepository);
+                                                          FareConfigurationRepositoryPort fareConfigRepository,
+                                                          TelemetryPort telemetryPort) {
+        return new ProcessPaymentUseCase(paymentRepository, paymentGateway, fareConfigRepository, telemetryPort);
     }
     
     @Bean
@@ -254,8 +260,10 @@ public class UseCaseConfiguration {
     @Bean
     public SendNotificationInputPort sendNotificationUseCase(
             NotificationRepositoryPort notificationRepository,
-            NotificationServicePort notificationService) {
-        return new SendNotificationUseCase(notificationRepository, notificationService);
+            NotificationServicePort notificationService,
+            TelemetryPort telemetryPort,
+            DriverAssignmentMetricsPort driverAssignmentMetricsPort) {
+        return new SendNotificationUseCase(notificationRepository, notificationService, telemetryPort, driverAssignmentMetricsPort);
     }
     
     @Bean

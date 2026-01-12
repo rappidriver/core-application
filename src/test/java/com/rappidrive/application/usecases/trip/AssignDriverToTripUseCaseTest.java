@@ -4,6 +4,10 @@ import com.rappidrive.application.exceptions.TripAlreadyAcceptedException;
 import com.rappidrive.application.ports.input.trip.AssignDriverToTripInputPort;
 import com.rappidrive.application.ports.output.DriverRepositoryPort;
 import com.rappidrive.application.ports.output.TripRepositoryPort;
+import com.rappidrive.application.ports.output.TelemetryPort;
+import com.rappidrive.application.ports.output.DriverAssignmentMetricsPort;
+import com.rappidrive.application.metrics.DriverAssignmentStage;
+import com.rappidrive.application.metrics.DriverAssignmentAttemptStatus;
 import com.rappidrive.domain.entities.Driver;
 import com.rappidrive.domain.entities.Trip;
 import com.rappidrive.domain.events.DomainEventPublisher;
@@ -19,8 +23,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -30,6 +36,8 @@ class AssignDriverToTripUseCaseTest {
     private TripRepositoryPort tripRepository;
     private DriverRepositoryPort driverRepository;
     private DomainEventPublisher eventPublisher;
+    private TelemetryPort telemetryPort;
+    private DriverAssignmentMetricsPort metricsPort;
     private AssignDriverToTripUseCase useCase;
 
     @BeforeEach
@@ -37,7 +45,31 @@ class AssignDriverToTripUseCaseTest {
         tripRepository = mock(TripRepositoryPort.class);
         driverRepository = mock(DriverRepositoryPort.class);
         eventPublisher = mock(DomainEventPublisher.class);
-        useCase = new AssignDriverToTripUseCase(tripRepository, driverRepository, eventPublisher);
+        
+        // No-op telemetry port for unit tests - just pass through the execution
+        telemetryPort = new TelemetryPort() {
+            @Override
+            public <T> T traceUseCase(String useCaseName, Map<String, String> attributes, Supplier<T> supplier) {
+                return supplier.get();
+            }
+        };
+        
+        // No-op metrics port for unit tests - ignore all metric calls
+        metricsPort = new DriverAssignmentMetricsPort() {
+            @Override
+            public void recordStageDuration(DriverAssignmentStage stage, long durationMillis) {}
+            
+            @Override
+            public void incrementAttempts(DriverAssignmentStage stage, DriverAssignmentAttemptStatus status) {}
+            
+            @Override
+            public void incrementQueue(String tenantId) {}
+            
+            @Override
+            public void decrementQueue(String tenantId) {}
+        };
+        
+        useCase = new AssignDriverToTripUseCase(tripRepository, driverRepository, eventPublisher, telemetryPort, metricsPort);
     }
 
     private Driver buildAvailableDriver(UUID id) {

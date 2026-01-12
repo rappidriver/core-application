@@ -59,7 +59,9 @@ class OutboxEventProcessorIntegrationTest {
                 "PENDING",
                 0,
                 null,
-                LocalDateTime.now(ZoneId.systemDefault())
+                LocalDateTime.now(ZoneId.systemDefault()),
+                null,
+                null
         );
 
         // When
@@ -83,14 +85,14 @@ class OutboxEventProcessorIntegrationTest {
         LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
 
         OutboxEventJpaEntity event1 = new OutboxEventJpaEntity(
-                event1Id, UUID.randomUUID(), "TRIP_CREATED", "{}", 
-                "PENDING", 0, null, now
+            event1Id, UUID.randomUUID(), "TRIP_CREATED", "{}", 
+            "PENDING", 0, null, now, null, null
         );
         springDataRepository.save(event1);
 
         OutboxEventJpaEntity event2 = new OutboxEventJpaEntity(
-                event2Id, UUID.randomUUID(), "DRIVER_ASSIGNED", "{}", 
-                "PENDING", 0, null, now
+            event2Id, UUID.randomUUID(), "DRIVER_ASSIGNED", "{}", 
+            "PENDING", 0, null, now, null, null
         );
         springDataRepository.save(event2);
 
@@ -109,8 +111,8 @@ class OutboxEventProcessorIntegrationTest {
         LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
 
         OutboxEventJpaEntity event = new OutboxEventJpaEntity(
-                eventId, UUID.randomUUID(), "PAYMENT_PROCESSED", "{\"amount\": 100}", 
-                "PENDING", 0, null, now
+            eventId, UUID.randomUUID(), "PAYMENT_PROCESSED", "{\"amount\": 100}", 
+            "PENDING", 0, null, now, null, null
         );
         springDataRepository.save(event);
 
@@ -130,14 +132,14 @@ class OutboxEventProcessorIntegrationTest {
         LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
 
         OutboxEventJpaEntity event1 = new OutboxEventJpaEntity(
-                event1Id, UUID.randomUUID(), "TRIP_CREATED", "{}", 
-                "PENDING", 0, null, now
+            event1Id, UUID.randomUUID(), "TRIP_CREATED", "{}", 
+            "PENDING", 0, null, now, null, null
         );
         springDataRepository.save(event1);
 
         OutboxEventJpaEntity event2 = new OutboxEventJpaEntity(
-                event2Id, UUID.randomUUID(), "DRIVER_ASSIGNED", "{}", 
-                "PENDING", 0, null, now
+            event2Id, UUID.randomUUID(), "DRIVER_ASSIGNED", "{}", 
+            "PENDING", 0, null, now, null, null
         );
         springDataRepository.save(event2);
 
@@ -162,7 +164,9 @@ class OutboxEventProcessorIntegrationTest {
                 "PENDING",
                 0,
                 null,
-                createdAt
+                createdAt,
+                null,
+                null
         );
         outboxRepository.save(event);
         entityManager.flush();
@@ -192,7 +196,9 @@ class OutboxEventProcessorIntegrationTest {
                 "PENDING",
                 0,
                 null,
-                createdAt
+                createdAt,
+                null,
+                null
         );
         outboxRepository.save(event);
         entityManager.flush();
@@ -223,7 +229,9 @@ class OutboxEventProcessorIntegrationTest {
                 "PENDING",
                 5, // Already maxed out
                 null,
-                createdAt
+                createdAt,
+                null,
+                null
         );
         outboxRepository.save(event);
         entityManager.flush();
@@ -252,7 +260,9 @@ class OutboxEventProcessorIntegrationTest {
                 "PENDING",
                 0,
                 null,
-                createdAt
+                createdAt,
+                null,
+                null
         );
         outboxRepository.save(event);
         entityManager.flush();
@@ -286,8 +296,8 @@ class OutboxEventProcessorIntegrationTest {
         LocalDateTime nextAttempt = createdAt.plusSeconds(100); // Far in future
 
         OutboxEventJpaEntity event = new OutboxEventJpaEntity(
-                eventId, UUID.randomUUID(), "RETRY_DELAYED_EVENT", "{}", 
-                "PENDING", 2, nextAttempt, createdAt
+            eventId, UUID.randomUUID(), "RETRY_DELAYED_EVENT", "{}", 
+            "PENDING", 2, nextAttempt, createdAt, null, null
         );
         springDataRepository.save(event);
         entityManager.flush();

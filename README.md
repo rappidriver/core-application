@@ -75,7 +75,19 @@ Application runs at: http://localhost:8080
 
 Health check: http://localhost:8080/api/health
 
-### 4. Run Tests
+### 4. Observability Stack
+
+```bash
+docker-compose up -d zipkin prometheus
+```
+
+- **Tracing**: Zipkin UI at http://localhost:9411 (backend exports spans via OpenTelemetry; override endpoint with `ZIPKIN_ENDPOINT`)
+- **Metrics**: Prometheus at http://localhost:9090 scraping `http://host.docker.internal:8080/actuator/prometheus`
+- **Logging**: Production profile emits JSON logs with `traceId`/`spanId`; other profiles keep human-friendly patterns
+
+With the stack running you can trace a trip creation + payment flow end-to-end and correlate logs/metrics/spans via shared IDs.
+
+### 5. Run Tests
 ```bash
 # Unit tests
 mvn test

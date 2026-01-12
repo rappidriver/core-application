@@ -4,12 +4,13 @@ import com.rappidrive.application.ports.input.payment.ProcessPaymentInputPort;
 import com.rappidrive.application.ports.output.FareConfigurationRepositoryPort;
 import com.rappidrive.application.ports.output.PaymentGatewayPort;
 import com.rappidrive.application.ports.output.PaymentRepositoryPort;
+import com.rappidrive.application.ports.output.TelemetryPort;
 import com.rappidrive.domain.entities.FareConfiguration;
 import com.rappidrive.domain.entities.Payment;
-import com.rappidrive.domain.exceptions.FareConfigurationNotFoundException;
-import com.rappidrive.domain.exceptions.PaymentNotFoundException;
 import com.rappidrive.domain.exceptions.PaymentProcessingException;
 import com.rappidrive.domain.valueobjects.Money;
+
+import java.util.Objects;
 
 /**
  * Use case for processing payments.
@@ -24,18 +25,25 @@ public class ProcessPaymentUseCase implements ProcessPaymentInputPort {
     private final PaymentRepositoryPort paymentRepository;
     private final PaymentGatewayPort paymentGateway;
     private final FareConfigurationRepositoryPort fareConfigurationRepository;
+    private final TelemetryPort telemetryPort;
     // TODO: Add TripRepositoryPort and FareRepositoryPort when Trip management is implemented
     
     public ProcessPaymentUseCase(PaymentRepositoryPort paymentRepository,
                                 PaymentGatewayPort paymentGateway,
-                                FareConfigurationRepositoryPort fareConfigurationRepository) {
+                                FareConfigurationRepositoryPort fareConfigurationRepository,
+                                TelemetryPort telemetryPort) {
         this.paymentRepository = paymentRepository;
         this.paymentGateway = paymentGateway;
         this.fareConfigurationRepository = fareConfigurationRepository;
+        this.telemetryPort = Objects.requireNonNull(telemetryPort, "telemetryPort must not be null");
     }
     
     @Override
     public Payment execute(ProcessPaymentCommand command) {
+        return telemetryPort.traceUseCase("usecase.process_payment", () -> processPayment(command));
+    }
+
+    private Payment processPayment(ProcessPaymentCommand command) {
         // Check if payment already exists for this trip
         if (paymentRepository.existsByTripId(command.tripId())) {
             throw new PaymentProcessingException("Payment already exists for trip: " + command.tripId());

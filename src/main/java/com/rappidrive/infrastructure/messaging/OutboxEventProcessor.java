@@ -3,6 +3,11 @@ package com.rappidrive.infrastructure.messaging;
 import com.rappidrive.application.ports.output.EventDispatcherPort;
 import com.rappidrive.application.ports.output.OutboxRepositoryPort;
 import com.rappidrive.domain.outbox.OutboxEvent;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.TraceContext;
+import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -11,7 +16,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -40,6 +44,8 @@ public class OutboxEventProcessor {
 
     private final OutboxRepositoryPort outboxRepository;
     private final EventDispatcherPort eventDispatcher;
+    private final MeterRegistry meterRegistry;
+    private final Tracer tracer;
 
     private static final int MAX_RETRIES = 5;
     private static final int DEFAULT_BATCH_SIZE = 50;
@@ -70,6 +76,12 @@ public class OutboxEventProcessor {
 
             for (OutboxEvent event : events) {
                 MDC.put("correlationId", event.getId().toString());
+                if (event.getTraceId() != null) {
+                    MDC.put("traceId", event.getTraceId());
+                }
+                if (event.getSpanId() != null) {
+                    MDC.put("spanId", event.getSpanId());
+                }
                 try {
                     dispatchEvent(event);
                     outboxRepository.markSent(event.getId());
@@ -81,6 +93,8 @@ public class OutboxEventProcessor {
                     handleEventFailure(event, ex);
                 } finally {
                     MDC.remove("correlationId");
+                    MDC.remove("traceId");
+                    MDC.remove("spanId");
                 }
             }
 
@@ -97,10 +111,29 @@ public class OutboxEventProcessor {
      * Wraps exceptions for proper retry handling.
      */
     private void dispatchEvent(OutboxEvent event) {
+        Timer.Sample sample = Timer.start(meterRegistry);
+        Span span = startSpan(event);
+        Tracer.SpanInScope scope = null;
         try {
+            if (span != null) {
+                scope = tracer.withSpan(span);
+            }
             eventDispatcher.dispatch(event.getId(), event.getEventType(), event.getPayload());
+            incrementDispatchCounter(event, "success");
         } catch (Exception ex) {
+            incrementDispatchCounter(event, "error");
+            if (span != null) {
+                span.error(ex);
+            }
             throw new OutboxDispatchException("Failed to dispatch event: " + event.getId(), ex);
+        } finally {
+            sample.stop(resolveDispatchTimer(event));
+            if (scope != null) {
+                scope.close();
+            }
+            if (span != null) {
+                span.end();
+            }
         }
     }
 
@@ -140,6 +173,40 @@ public class OutboxEventProcessor {
         public OutboxDispatchException(String message, Throwable cause) {
             super(message, cause);
         }
+    }
+
+    private void incrementDispatchCounter(OutboxEvent event, String status) {
+        meterRegistry.counter(
+            "outbox_dispatch_total",
+            "eventType", event.getEventType(),
+            "status", status
+        ).increment();
+    }
+
+    private Timer resolveDispatchTimer(OutboxEvent event) {
+        return Timer.builder("outbox_dispatch_duration")
+            .description("Outbox event dispatch latency")
+            .tags("eventType", event.getEventType())
+            .register(meterRegistry);
+    }
+
+    private Span startSpan(OutboxEvent event) {
+        if (tracer == null) {
+            return null;
+        }
+
+        Span.Builder builder = tracer.spanBuilder().name("outbox.dispatch")
+            .tag("outbox.event.type", event.getEventType());
+
+        if (event.getTraceId() != null && event.getSpanId() != null) {
+            TraceContext.Builder contextBuilder = tracer.traceContextBuilder()
+                .traceId(event.getTraceId())
+                .spanId(event.getSpanId())
+                .sampled(true);
+            builder.setParent(contextBuilder.build());
+        }
+
+        return builder.start();
     }
 }
 

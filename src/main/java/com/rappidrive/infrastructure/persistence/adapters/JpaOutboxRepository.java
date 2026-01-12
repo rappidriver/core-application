@@ -30,7 +30,9 @@ public class JpaOutboxRepository implements OutboxRepositoryPort {
             event.getStatus(),
             event.getAttempts(),
             event.getNextAttemptAt(),
-            event.getCreatedAt()
+            event.getCreatedAt(),
+            event.getTraceId(),
+            event.getSpanId()
         );
         repository.save(entity);
     }
@@ -91,7 +93,9 @@ public class JpaOutboxRepository implements OutboxRepositoryPort {
             e.getStatus(),
             e.getAttempts(),
             e.getNextAttemptAt(),
-            e.getCreatedAt()
+            e.getCreatedAt(),
+            e.getTraceId(),
+            e.getSpanId()
         );
     }
 }

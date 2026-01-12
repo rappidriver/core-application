@@ -29,7 +29,7 @@ class OutboxPublisherTest {
 
     @Test
     void publishPending_success_marksSent() throws Exception {
-        OutboxEvent e = new OutboxEvent(UUID.randomUUID(), UUID.randomUUID(), "T", "{}", "PENDING", 0, null, LocalDateTime.now());
+        OutboxEvent e = new OutboxEvent(UUID.randomUUID(), UUID.randomUUID(), "T", "{}", "PENDING", 0, null, LocalDateTime.now(), null, null);
         when(repo.findPendingBatch(any(LocalDateTime.class), anyInt())).thenReturn(List.of(e));
 
         publisher.publishPending();
@@ -40,7 +40,7 @@ class OutboxPublisherTest {
 
     @Test
     void publishPending_failure_incrementsAttempts() throws Exception {
-        OutboxEvent e = new OutboxEvent(UUID.randomUUID(), UUID.randomUUID(), "T", "{}", "PENDING", 0, null, LocalDateTime.now());
+        OutboxEvent e = new OutboxEvent(UUID.randomUUID(), UUID.randomUUID(), "T", "{}", "PENDING", 0, null, LocalDateTime.now(), null, null);
         when(repo.findPendingBatch(any(LocalDateTime.class), anyInt())).thenReturn(List.of(e));
         doThrow(new RuntimeException("fail")).when(dispatcher).dispatch(any(), any(), any());
 
@@ -54,7 +54,7 @@ class OutboxPublisherTest {
     @Test
     void publishPending_exceedsMaxAttempts_marksFailed() throws Exception {
         // simulate event with attempts = max-1 (OutboxPublisher maxAttempts=5)
-        OutboxEvent e = new OutboxEvent(UUID.randomUUID(), UUID.randomUUID(), "T", "{}", "PENDING", 4, null, LocalDateTime.now());
+        OutboxEvent e = new OutboxEvent(UUID.randomUUID(), UUID.randomUUID(), "T", "{}", "PENDING", 4, null, LocalDateTime.now(), null, null);
         when(repo.findPendingBatch(any(LocalDateTime.class), anyInt())).thenReturn(List.of(e));
         doThrow(new RuntimeException("fail")).when(dispatcher).dispatch(any(), any(), any());
 

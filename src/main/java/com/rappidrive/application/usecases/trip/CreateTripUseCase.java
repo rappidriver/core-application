@@ -3,16 +3,19 @@ package com.rappidrive.application.usecases.trip;
 import com.rappidrive.application.ports.input.trip.CreateTripInputPort;
 import com.rappidrive.application.ports.output.PassengerRepositoryPort;
 import com.rappidrive.application.ports.output.TripRepositoryPort;
+import com.rappidrive.application.ports.output.TelemetryPort;
 import com.rappidrive.domain.entities.Passenger;
 import com.rappidrive.domain.entities.Trip;
 import com.rappidrive.domain.events.DomainEventPublisher;
 import com.rappidrive.domain.events.TripCreatedEvent;
 import com.rappidrive.domain.exceptions.PassengerNotFoundException;
 import com.rappidrive.domain.services.FareCalculator;
+import com.rappidrive.domain.services.StandardFareCalculator;
 import com.rappidrive.domain.valueobjects.Money;
 import com.rappidrive.domain.valueobjects.PassengerId;
 import com.rappidrive.domain.valueobjects.TripId;
-import com.rappidrive.domain.services.StandardFareCalculator;
+
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -24,16 +27,24 @@ public class CreateTripUseCase implements CreateTripInputPort {
     private final PassengerRepositoryPort passengerRepository;
     private final FareCalculator fareCalculator;
     private final DomainEventPublisher eventPublisher;
+    private final TelemetryPort telemetryPort;
 
-    public CreateTripUseCase(TripRepositoryPort tripRepository, PassengerRepositoryPort passengerRepository) {
+    public CreateTripUseCase(TripRepositoryPort tripRepository,
+                             PassengerRepositoryPort passengerRepository,
+                             TelemetryPort telemetryPort) {
         this.tripRepository = tripRepository;
         this.passengerRepository = passengerRepository;
         this.fareCalculator = new StandardFareCalculator();
         this.eventPublisher = DomainEventPublisher.instance();
+        this.telemetryPort = Objects.requireNonNull(telemetryPort, "telemetryPort must not be null");
     }
 
     @Override
     public Trip execute(CreateTripCommand command) {
+        return telemetryPort.traceUseCase("usecase.create_trip", () -> runBusinessLogic(command));
+    }
+
+    private Trip runBusinessLogic(CreateTripCommand command) {
         // Validate passenger exists and can request rides
         Passenger passenger = passengerRepository.findById(command.passengerId())
             .orElseThrow(() -> new PassengerNotFoundException(command.passengerId()));

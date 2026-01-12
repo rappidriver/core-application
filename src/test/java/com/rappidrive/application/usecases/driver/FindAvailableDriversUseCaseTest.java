@@ -1,7 +1,11 @@
 package com.rappidrive.application.usecases.driver;
 
+import com.rappidrive.application.metrics.DriverAssignmentAttemptStatus;
+import com.rappidrive.application.metrics.DriverAssignmentStage;
 import com.rappidrive.application.ports.input.driver.FindAvailableDriversCommand;
+import com.rappidrive.application.ports.output.DriverAssignmentMetricsPort;
 import com.rappidrive.application.ports.output.DriverGeoQueryPort;
+import com.rappidrive.application.ports.output.TelemetryPort;
 import com.rappidrive.domain.entities.Driver;
 import com.rappidrive.domain.enums.DriverStatus;
 import com.rappidrive.domain.valueobjects.*;
@@ -14,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,6 +38,8 @@ class FindAvailableDriversUseCaseTest {
     
     private ExecutorService executor;
     private FindAvailableDriversUseCase useCase;
+    private TelemetryPort telemetryPort;
+    private DriverAssignmentMetricsPort metricsPort;
     
     private TenantId tenantId;
     private Location pickupLocation;
@@ -44,7 +51,28 @@ class FindAvailableDriversUseCaseTest {
     @BeforeEach
     void setUp() {
         executor = Executors.newVirtualThreadPerTaskExecutor();
-        useCase = new FindAvailableDriversUseCase(driverGeoQueryPort, executor);
+        telemetryPort = new TelemetryPort() {
+            @Override
+            public <T> T traceUseCase(String useCaseName, Map<String, String> attributes, java.util.function.Supplier<T> supplier) {
+                return supplier.get();
+            }
+        };
+
+        metricsPort = new DriverAssignmentMetricsPort() {
+            @Override
+            public void recordStageDuration(DriverAssignmentStage stage, long durationMillis) {}
+
+            @Override
+            public void incrementAttempts(DriverAssignmentStage stage, DriverAssignmentAttemptStatus status) {}
+
+            @Override
+            public void incrementQueue(String tenantId) {}
+
+            @Override
+            public void decrementQueue(String tenantId) {}
+        };
+
+        useCase = new FindAvailableDriversUseCase(driverGeoQueryPort, executor, telemetryPort, metricsPort);
         
         tenantId = TenantId.generate();
         pickupLocation = new Location(-23.550520, -46.633308);

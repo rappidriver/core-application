@@ -39,9 +39,17 @@ public class OutboxEventJpaEntity {
     @Column(name = "sent_at")
     private LocalDateTime sentAt;
 
+    @Column(name = "trace_id")
+    private String traceId;
+
+    @Column(name = "span_id")
+    private String spanId;
+
     public OutboxEventJpaEntity() {}
 
-    public OutboxEventJpaEntity(UUID id, UUID aggregateId, String eventType, String payload, String status, int attempts, LocalDateTime nextAttemptAt, LocalDateTime createdAt) {
+    public OutboxEventJpaEntity(UUID id, UUID aggregateId, String eventType, String payload,
+                                String status, int attempts, LocalDateTime nextAttemptAt,
+                                LocalDateTime createdAt, String traceId, String spanId) {
         this.id = id;
         this.aggregateId = aggregateId;
         this.eventType = eventType;
@@ -50,6 +58,8 @@ public class OutboxEventJpaEntity {
         this.attempts = attempts;
         this.nextAttemptAt = nextAttemptAt;
         this.createdAt = createdAt;
+        this.traceId = traceId;
+        this.spanId = spanId;
     }
 
     public UUID getId() { return id; }
@@ -78,4 +88,10 @@ public class OutboxEventJpaEntity {
 
     public LocalDateTime getSentAt() { return sentAt; }
     public void setSentAt(LocalDateTime sentAt) { this.sentAt = sentAt; }
+
+    public String getTraceId() { return traceId; }
+    public void setTraceId(String traceId) { this.traceId = traceId; }
+
+    public String getSpanId() { return spanId; }
+    public void setSpanId(String spanId) { this.spanId = spanId; }
 }

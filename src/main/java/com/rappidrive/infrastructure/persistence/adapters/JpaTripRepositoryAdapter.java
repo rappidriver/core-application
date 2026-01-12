@@ -7,6 +7,8 @@ import com.rappidrive.domain.valueobjects.TenantId;
 import com.rappidrive.infrastructure.persistence.entities.TripJpaEntity;
 import com.rappidrive.infrastructure.persistence.mappers.TripMapper;
 import com.rappidrive.infrastructure.persistence.repositories.SpringDataTripRepository;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +28,7 @@ public class JpaTripRepositoryAdapter implements TripRepositoryPort {
     private final TripMapper mapper;
     private final com.rappidrive.application.ports.output.OutboxRepositoryPort outboxRepository;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+    private final Tracer tracer;
     
     @Override
     public Trip save(Trip trip) {
@@ -48,6 +51,8 @@ public class JpaTripRepositoryAdapter implements TripRepositoryPort {
             try {
                 java.util.List<com.rappidrive.domain.events.DomainEvent> events = com.rappidrive.domain.events.DomainEventsCollector.instance().drain();
                 java.time.LocalDateTime now = java.time.LocalDateTime.now();
+                String traceId = currentTraceId();
+                String spanId = currentSpanId();
                 for (com.rappidrive.domain.events.DomainEvent event : events) {
                     // Determine aggregate id (prefer explicit tripId if available)
                     java.util.UUID aggregateId = extractAggregateId(event, saved);
@@ -60,7 +65,9 @@ public class JpaTripRepositoryAdapter implements TripRepositoryPort {
                         "PENDING",
                         0,
                         now,
-                        now
+                        now,
+                        traceId,
+                        spanId
                     );
                     outboxRepository.save(outboxEvent);
                 }
@@ -163,6 +170,16 @@ public class JpaTripRepositoryAdapter implements TripRepositoryPort {
         }
 
         return saved.getId();
+    }
+
+    private String currentTraceId() {
+        Span span = tracer != null ? tracer.currentSpan() : null;
+        return span != null ? span.context().traceId() : null;
+    }
+
+    private String currentSpanId() {
+        Span span = tracer != null ? tracer.currentSpan() : null;
+        return span != null ? span.context().spanId() : null;
     }
 }
 

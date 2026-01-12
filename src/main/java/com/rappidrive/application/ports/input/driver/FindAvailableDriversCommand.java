@@ -3,6 +3,8 @@ package com.rappidrive.application.ports.input.driver;
 import com.rappidrive.domain.valueobjects.Location;
 import com.rappidrive.domain.valueobjects.TenantId;
 
+import java.util.UUID;
+
 /**
  * Command for finding available drivers near a pickup location.
  * 
@@ -13,7 +15,8 @@ import com.rappidrive.domain.valueobjects.TenantId;
 public record FindAvailableDriversCommand(
     TenantId tenantId,
     Location pickupLocation,
-    double radiusKm
+    double radiusKm,
+    UUID tripId
 ) {
     public FindAvailableDriversCommand {
         if (tenantId == null) {
@@ -31,6 +34,10 @@ public record FindAvailableDriversCommand(
      * Creates command with default 5km radius.
      */
     public FindAvailableDriversCommand(TenantId tenantId, Location pickupLocation) {
-        this(tenantId, pickupLocation, 5.0);
+        this(tenantId, pickupLocation, 5.0, null);
+    }
+
+    public FindAvailableDriversCommand(TenantId tenantId, Location pickupLocation, double radiusKm) {
+        this(tenantId, pickupLocation, radiusKm, null);
     }
 }

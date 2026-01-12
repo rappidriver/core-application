@@ -28,7 +28,18 @@ class JpaOutboxRepositoryTest {
 
     @Test
     void save_persistsEntity() {
-        com.rappidrive.domain.outbox.OutboxEvent evt = new com.rappidrive.domain.outbox.OutboxEvent(UUID.randomUUID(), UUID.randomUUID(), "T", "{\"a\":1}", "PENDING", 0, null, LocalDateTime.now());
+        com.rappidrive.domain.outbox.OutboxEvent evt = new com.rappidrive.domain.outbox.OutboxEvent(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "T",
+            "{\"a\":1}",
+            "PENDING",
+            0,
+            null,
+            LocalDateTime.now(),
+            null,
+            null
+        );
 
         adapter.save(evt);
 
@@ -41,7 +52,7 @@ class JpaOutboxRepositoryTest {
 
     @Test
     void findPendingBatch_mapsEntitiesToDomain() {
-        OutboxEventJpaEntity e = new OutboxEventJpaEntity(UUID.randomUUID(), UUID.randomUUID(), "T", "{}", "PENDING", 0, null, LocalDateTime.now());
+        OutboxEventJpaEntity e = new OutboxEventJpaEntity(UUID.randomUUID(), UUID.randomUUID(), "T", "{}", "PENDING", 0, null, LocalDateTime.now(), null, null);
         when(repo.findPending(any(LocalDateTime.class), any())).thenReturn(List.of(e));
 
         List<OutboxEvent> batch = adapter.findPendingBatch(LocalDateTime.now(), 10);

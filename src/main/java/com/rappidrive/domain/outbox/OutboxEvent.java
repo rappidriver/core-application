@@ -16,9 +16,12 @@ public final class OutboxEvent {
     private final int attempts;
     private final LocalDateTime nextAttemptAt;
     private final LocalDateTime createdAt;
+    private final String traceId;
+    private final String spanId;
 
     public OutboxEvent(UUID id, UUID aggregateId, String eventType, String payload,
-                       String status, int attempts, LocalDateTime nextAttemptAt, LocalDateTime createdAt) {
+                       String status, int attempts, LocalDateTime nextAttemptAt, LocalDateTime createdAt,
+                       String traceId, String spanId) {
         this.id = id;
         this.aggregateId = aggregateId;
         this.eventType = eventType;
@@ -27,6 +30,8 @@ public final class OutboxEvent {
         this.attempts = attempts;
         this.nextAttemptAt = nextAttemptAt;
         this.createdAt = createdAt;
+        this.traceId = traceId;
+        this.spanId = spanId;
     }
 
     public UUID getId() { return id; }
@@ -37,6 +42,8 @@ public final class OutboxEvent {
     public int getAttempts() { return attempts; }
     public LocalDateTime getNextAttemptAt() { return nextAttemptAt; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public String getTraceId() { return traceId; }
+    public String getSpanId() { return spanId; }
 
     @Override
     public boolean equals(Object o) {
