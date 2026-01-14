@@ -24,6 +24,7 @@ import com.rappidrive.application.usecases.vehicle.*;
 import com.rappidrive.application.usecases.approval.*;
 import com.rappidrive.domain.services.FareCalculator;
 import com.rappidrive.domain.services.StandardFareCalculator;
+import com.rappidrive.domain.services.CancellationPolicyService;
 import com.rappidrive.domain.events.DomainEventPublisher;
 import com.rappidrive.domain.services.RatingValidationService;
 import com.rappidrive.domain.services.TripCompletionService;
@@ -151,6 +152,14 @@ public class UseCaseConfiguration {
             fareRepository,
             paymentRepository
         );
+    }
+
+    @Bean
+    public CancelTripInputPort cancelTripUseCase(
+            TripRepositoryPort tripRepository,
+            PaymentGatewayPort paymentGateway) {
+        CancellationPolicyService policyService = new CancellationPolicyService();
+        return new CancelTripUseCase(tripRepository, policyService, paymentGateway);
     }
     
     // Vehicle Use Cases

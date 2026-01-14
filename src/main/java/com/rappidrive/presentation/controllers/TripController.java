@@ -4,6 +4,11 @@ import com.rappidrive.application.ports.input.CompleteTripWithPaymentInputPort;
 import com.rappidrive.application.ports.input.GetTripWithPaymentDetailsInputPort;
 import com.rappidrive.application.ports.input.trip.*;
 import com.rappidrive.domain.entities.Trip;
+import com.rappidrive.domain.valueobjects.ActorType;
+import com.rappidrive.domain.valueobjects.CancellationReason;
+import com.rappidrive.presentation.dto.CancelTripRequest;
+import com.rappidrive.presentation.dto.CancelTripResponse;
+import com.rappidrive.presentation.dto.common.MoneyDto;
 import com.rappidrive.presentation.dto.request.AssignDriverToTripRequest;
 import com.rappidrive.presentation.dto.request.CompleteTripWithPaymentRequest;
 import com.rappidrive.presentation.dto.request.CreateTripRequest;
@@ -22,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -44,6 +51,7 @@ public class TripController {
     private final CompleteTripInputPort completeTripUseCase;
     private final CompleteTripWithPaymentInputPort completeTripWithPaymentUseCase;
     private final GetTripWithPaymentDetailsInputPort getTripWithPaymentDetailsUseCase;
+    private final CancelTripInputPort cancelTripUseCase;
     private final TripDtoMapper mapper;
     
     @Operation(summary = "Create a new trip")
@@ -195,4 +203,58 @@ public class TripController {
         
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "Cancel a trip")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Trip cancelled successfully",
+            content = @Content(schema = @Schema(implementation = CancelTripResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid trip state or authorization error"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "404", description = "Trip not found")
+    })
+    @PreAuthorize("hasAnyRole('PASSENGER', 'DRIVER')")
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<CancelTripResponse> cancelTrip(
+            @PathVariable UUID id,
+            @Valid @RequestBody CancelTripRequest request,
+            Authentication authentication) {
+        log.info("Cancelling trip: tripId={}", id);
+
+        UUID userId = UUID.fromString(authentication.getName());
+        ActorType actorType = extractActorType(authentication);
+        CancellationReason reason = CancellationReason.valueOf(request.reason());
+
+        CancelTripInputPort.CancelCommand command = new CancelTripInputPort.CancelCommand(
+            id,
+            userId,
+            actorType,
+            reason,
+            request.additionalNotes()
+        );
+
+        CancelTripInputPort.CancellationResult result = cancelTripUseCase.execute(command);
+
+        CancelTripResponse response = new CancelTripResponse(
+            result.tripId().getValue(),
+            result.cancelled(),
+            result.cancelledBy().name(),
+            result.reason().name(),
+            new MoneyDto(result.feeCharged().getAmount(), "BRL"),
+            result.cancelledAt(),
+            result.message()
+        );
+
+        log.info("Trip cancelled: tripId={}, cancelledBy={}, fee={}", 
+            id, result.cancelledBy(), result.feeCharged());
+        return ResponseEntity.ok(response);
+    }
+
+    private ActorType extractActorType(Authentication authentication) {
+        if (authentication.getAuthorities().stream()
+            .anyMatch(auth -> auth.getAuthority().contains("DRIVER"))) {
+            return ActorType.DRIVER;
+        }
+        return ActorType.PASSENGER;
+    }
 }
+

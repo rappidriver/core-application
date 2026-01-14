@@ -33,9 +33,13 @@ public class Trip {
     private static final double BASE_FARE = 5.0;
     private static final double PRICE_PER_KM = 2.5;
     private final LocalDateTime requestedAt;
+    private LocalDateTime assignedAt;
     private LocalDateTime startedAt;
     private LocalDateTime completedAt;
     private String cancellationReason;
+    private ActorType cancelledBy;
+    private CancellationReason cancellationReasonEnum;
+    private LocalDateTime cancelledAt;
     private LocalDateTime updatedAt;
 
     private int version;
@@ -121,6 +125,7 @@ public class Trip {
         }
         this.driverId = driverId;
         this.status = TripStatus.DRIVER_ASSIGNED;
+        this.assignedAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -277,6 +282,26 @@ public class Trip {
         return Optional.ofNullable(cancellationReason);
     }
 
+    public Optional<ActorType> getCancelledBy() {
+        return Optional.ofNullable(cancelledBy);
+    }
+
+    public Optional<CancellationReason> getCancellationReasonEnum() {
+        return Optional.ofNullable(cancellationReasonEnum);
+    }
+
+    public Optional<LocalDateTime> getCancelledAt() {
+        return Optional.ofNullable(cancelledAt);
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return requestedAt;
+    }
+
+    public LocalDateTime getAssignedAt() {
+        return assignedAt;
+    }
+
     /**
      * Cancels the trip with a provided reason.
      * Validates reason and current trip state.
@@ -299,6 +324,38 @@ public class Trip {
         this.status = TripStatus.CANCELLED;
         this.completedAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void cancel(ActorType actor, CancellationReason reason, LocalDateTime cancelledAt) {
+        if (actor == null) {
+            throw new IllegalArgumentException("Actor cannot be null");
+        }
+        if (reason == null) {
+            throw new IllegalArgumentException("Cancellation reason cannot be null");
+        }
+        if (cancelledAt == null) {
+            throw new IllegalArgumentException("Cancelled at cannot be null");
+        }
+        if (this.status == TripStatus.COMPLETED) {
+            throw new InvalidTripStateException("Cannot cancel a completed trip");
+        }
+        if (this.status == TripStatus.CANCELLED) {
+            throw new InvalidTripStateException("Trip is already cancelled");
+        }
+        if (this.status == TripStatus.IN_PROGRESS) {
+            throw new InvalidTripStateException("Cannot cancel a trip in progress");
+        }
+
+        this.cancelledBy = actor;
+        this.cancellationReasonEnum = reason;
+        this.cancellationReason = reason.getDescription();
+        this.cancelledAt = cancelledAt;
+        this.status = TripStatus.CANCELLED;
+        this.updatedAt = LocalDateTime.now();
+
+        DomainEventsCollector.instance().handle(
+            new TripCancelledEvent(this.id, actor, reason, Money.zero(Currency.BRL))
+        );
     }
 
     /**

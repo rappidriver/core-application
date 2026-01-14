@@ -187,6 +187,7 @@ class HexagonalArchitectureTest {
             .orShould().implement(com.rappidrive.application.ports.input.SubmitDriverApprovalInputPort.class)
             .orShould().implement(com.rappidrive.application.ports.input.ApproveDriverInputPort.class)
             .orShould().implement(com.rappidrive.application.ports.input.RejectDriverInputPort.class)
+            .orShould().implement(com.rappidrive.application.ports.input.trip.CancelTripInputPort.class)
             .because("Use cases must implement their input port interfaces")
             .allowEmptyShould(true);
 
