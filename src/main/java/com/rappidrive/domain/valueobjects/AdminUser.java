@@ -5,12 +5,6 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Immutable value object representing an admin user in the approval system.
- * 
- * An admin user has a specific role that determines their permissions
- * for approving/rejecting driver applications.
- */
 public final class AdminUser {
     private final UUID id;
     private final Email email;
@@ -19,17 +13,6 @@ public final class AdminUser {
     private final TenantId tenantId;
     private final LocalDateTime createdAt;
     
-    /**
-     * Creates a new AdminUser instance.
-     * 
-     * @param id unique identifier for the admin
-     * @param email admin's email address
-     * @param role admin's role (determines permissions)
-     * @param fullName admin's full name
-     * @param tenantId tenant identifier for multi-tenancy isolation
-     * @param createdAt timestamp when admin was created
-     * @throws IllegalArgumentException if any parameter is null
-     */
     public AdminUser(UUID id, Email email, AdminRole role, String fullName,
                      TenantId tenantId, LocalDateTime createdAt) {
         if (id == null) {
@@ -59,7 +42,6 @@ public final class AdminUser {
         this.createdAt = createdAt;
     }
     
-    // Accessors
     public UUID id() {
         return id;
     }
@@ -84,36 +66,16 @@ public final class AdminUser {
         return createdAt;
     }
     
-    // Permission checks
-    
-    /**
-     * Checks if this admin can approve drivers.
-     * Only SUPER_ADMIN and COMPLIANCE_OFFICER can approve.
-     * 
-     * @return true if admin has approval permission
-     */
     public boolean canApproveDrivers() {
         return role == AdminRole.SUPER_ADMIN || 
                role == AdminRole.COMPLIANCE_OFFICER;
     }
     
-    /**
-     * Checks if this admin can reject drivers.
-     * Only SUPER_ADMIN and COMPLIANCE_OFFICER can reject.
-     * 
-     * @return true if admin has rejection permission
-     */
     public boolean canRejectDrivers() {
         return role == AdminRole.SUPER_ADMIN || 
                role == AdminRole.COMPLIANCE_OFFICER;
     }
     
-    /**
-     * Checks if this admin has a specific role.
-     * 
-     * @param requiredRole the role to check
-     * @return true if admin has the required role
-     */
     public boolean hasRole(AdminRole requiredRole) {
         return this.role == requiredRole;
     }

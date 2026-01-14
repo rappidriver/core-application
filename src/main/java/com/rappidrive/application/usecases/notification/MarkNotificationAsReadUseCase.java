@@ -18,26 +18,22 @@ public class MarkNotificationAsReadUseCase implements MarkNotificationAsReadInpu
     
     @Override
     public void execute(MarkAsReadCommand command) {
-        // 1. Buscar notificação
         Notification notification = notificationRepository
             .findById(command.notificationId())
             .orElseThrow(() -> new NotificationNotFoundException(command.notificationId()));
         
-        // 2. Validar ownership (usuário só pode marcar suas próprias notificações)
         if (!notification.getUserId().equals(command.userId())) {
             throw new NotificationNotFoundException(
                 "Notificação não pertence ao usuário informado"
             );
         }
         
-        // 3. Validar tenant
         if (!notification.getTenantId().equals(command.tenantId())) {
             throw new NotificationNotFoundException(
                 "Notificação não pertence ao tenant informado"
             );
         }
         
-        // 4. Marcar como lida (se ainda não estiver)
         if (notification.isUnread()) {
             notification.markAsRead();
             notificationRepository.save(notification);

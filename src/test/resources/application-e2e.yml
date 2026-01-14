@@ -1,6 +1,5 @@
 spring:
   datasource:
-    # Use test database - supports both local docker-compose and CI environments
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/rappidrive_dev}
     username: ${SPRING_DATASOURCE_USERNAME:rappidrive}
     password: ${SPRING_DATASOURCE_PASSWORD:rappidrive_dev_password}
@@ -24,6 +23,13 @@ spring:
     init:
       mode: never
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/rappidrive-test
+          jwk-set-uri: http://localhost:8180/realms/rappidrive-test/protocol/openid-connect/certs
+
 logging:
   level:
     root: WARN
@@ -34,4 +40,13 @@ logging:
 rappidrive:
   security:
     enabled: false
+
+keycloak:
+  auth-server-url: http://localhost:8180
+  realm: rappidrive-test
+  resource: rappidrive-api
+  credentials:
+    secret: test-secret
+  token-endpoint: http://localhost:8180/realms/rappidrive-test/protocol/openid-connect/token
+  client-id: rappidrive-api
 

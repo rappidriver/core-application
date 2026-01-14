@@ -10,9 +10,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Use case for getting payments.
- */
 public class GetPaymentUseCase implements GetPaymentInputPort {
     
     private final PaymentRepositoryPort paymentRepository;

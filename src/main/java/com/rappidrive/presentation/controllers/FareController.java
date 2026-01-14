@@ -9,9 +9,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * REST Controller for fare calculation.
- */
 @RestController
 @RequestMapping("/api/v1/fares")
 public class FareController {
@@ -25,9 +22,6 @@ public class FareController {
         this.mapper = mapper;
     }
     
-    /**
-     * POST /api/v1/fares/calculate - Calculates fare for a trip
-     */
     @PostMapping("/calculate")
     public ResponseEntity<FareResponse> calculateFare(@Valid @RequestBody CalculateFareRequest request) {
         Fare fare = calculateFareUseCase.execute(mapper.toCommand(request));

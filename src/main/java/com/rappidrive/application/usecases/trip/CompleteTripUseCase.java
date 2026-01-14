@@ -12,9 +12,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
 
-/**
- * Use case for completing a trip.
- */
 public class CompleteTripUseCase implements CompleteTripInputPort {
     
     private final TripRepositoryPort tripRepository;

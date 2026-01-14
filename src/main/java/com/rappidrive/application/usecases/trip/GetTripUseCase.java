@@ -8,9 +8,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
 
-/**
- * Use case for getting a trip by ID.
- */
 public class GetTripUseCase implements GetTripInputPort {
     
     private final TripRepositoryPort tripRepository;

@@ -6,9 +6,7 @@ import com.rappidrive.domain.entities.FareConfiguration;
 import com.rappidrive.domain.exceptions.FareConfigurationNotFoundException;
 import com.rappidrive.domain.valueobjects.TenantId;
 
-/**
- * Use case for getting fare configurations.
- */
+
 public class GetFareConfigurationUseCase implements GetFareConfigurationInputPort {
     
     private final FareConfigurationRepositoryPort fareConfigurationRepository;

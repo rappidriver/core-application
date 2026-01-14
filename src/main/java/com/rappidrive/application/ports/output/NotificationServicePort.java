@@ -4,7 +4,6 @@ import com.rappidrive.domain.entities.Notification;
 
 /**
  * Port de saída para serviço externo de notificações push (FCM).
- * Implementação futura - atualmente stub para estrutura.
  */
 public interface NotificationServicePort {
     

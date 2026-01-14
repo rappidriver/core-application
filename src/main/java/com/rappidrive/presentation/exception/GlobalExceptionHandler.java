@@ -1,5 +1,6 @@
 package com.rappidrive.presentation.exception;
 
+import com.rappidrive.application.exceptions.ApplicationException;
 import com.rappidrive.domain.exceptions.*;
 import com.rappidrive.presentation.dto.response.ErrorResponse;
 import org.slf4j.Logger;
@@ -15,10 +16,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Global exception handler for REST controllers.
- * Converts domain exceptions into appropriate HTTP responses.
- */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -177,6 +174,21 @@ public class GlobalExceptionHandler {
             LocalDateTime.now(),
             HttpStatus.BAD_REQUEST.value(),
             "Invalid argument",
+            ex.getMessage(),
+            null
+        );
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+    
+    @ExceptionHandler(ApplicationException.class)
+    public ResponseEntity<ErrorResponse> handleApplicationException(ApplicationException ex) {
+        log.error("Application error: {}", ex.getMessage());
+        
+        ErrorResponse response = new ErrorResponse(
+            LocalDateTime.now(),
+            HttpStatus.BAD_REQUEST.value(),
+            "Application error",
             ex.getMessage(),
             null
         );

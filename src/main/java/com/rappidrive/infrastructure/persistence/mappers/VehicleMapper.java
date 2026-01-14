@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * Mapper para conversão entre Vehicle (domain) e VehicleJpaEntity (JPA).
- * Implementação manual devido aos campos finais do Vehicle.
  */
 @Component
 public class VehicleMapper {

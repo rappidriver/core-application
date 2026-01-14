@@ -20,11 +20,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
-/**
- * REST controller for driver management.
- */
 @Tag(name = "Drivers", description = "Driver management endpoints")
 @RestController
 @RequestMapping("/api/v1/drivers")
@@ -155,5 +153,12 @@ public class DriverController {
         
         log.info("Found {} available drivers", responses.size());
         return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/available")
+    public ResponseEntity<?> getAvailableDrivers() {
+        log.info("Getting list of available drivers");
+        
+        return ResponseEntity.ok(List.of());
     }
 }

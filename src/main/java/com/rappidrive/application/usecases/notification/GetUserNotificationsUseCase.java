@@ -6,9 +6,6 @@ import com.rappidrive.domain.entities.Notification;
 
 import java.util.List;
 
-/**
- * Use case para buscar notificações de um usuário.
- */
 public class GetUserNotificationsUseCase implements GetUserNotificationsInputPort {
     
     private final NotificationRepositoryPort notificationRepository;

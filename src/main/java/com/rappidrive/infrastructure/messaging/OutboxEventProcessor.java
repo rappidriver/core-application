@@ -20,18 +20,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
-/**
- * Outbox Event Processor - Relay mechanism for processing domain events.
- *
- * This component:
- * 1. Periodically polls the outbox_event table for pending events
- * 2. Dispatches each event via EventDispatcherPort
- * 3. Marks events as PROCESSED or FAILED based on outcome
- * 4. Retries failed events with exponential backoff
- * 5. Provides structured logging with correlationId for tracing
- *
- * HIST-2026-011: Outbox Relay Implementation
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -50,13 +38,6 @@ public class OutboxEventProcessor {
     private static final int MAX_RETRIES = 5;
     private static final int DEFAULT_BATCH_SIZE = 50;
 
-    /**
-     * Process pending outbox events.
-     * Runs on a fixed delay (configurable via ${outbox.processor.delay-ms})
-     *
-     * Uses pessimistic locking (SELECT ... FOR UPDATE SKIP LOCKED) to ensure
-     * concurrent instances don't process same events.
-     */
     @Scheduled(fixedDelayString = "${outbox.processor.delay-ms:1000}")
     @Transactional
     public void processPendingEvents() {

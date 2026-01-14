@@ -8,9 +8,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
 
-/**
- * Use case for getting a passenger by ID.
- */
 public class GetPassengerUseCase implements GetPassengerInputPort {
     
     private final PassengerRepositoryPort passengerRepository;

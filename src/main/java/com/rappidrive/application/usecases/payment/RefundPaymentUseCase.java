@@ -9,9 +9,6 @@ import com.rappidrive.domain.exceptions.PaymentProcessingException;
 
 import java.util.UUID;
 
-/**
- * Use case for refunding payments.
- */
 public class RefundPaymentUseCase implements RefundPaymentInputPort {
     
     private final PaymentRepositoryPort paymentRepository;

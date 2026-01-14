@@ -7,9 +7,6 @@ import com.rappidrive.domain.enums.RatingType;
 
 import java.util.UUID;
 
-/**
- * Use case para obter rating de passageiro.
- */
 public class GetPassengerRatingUseCase implements GetPassengerRatingInputPort {
     
     private final RatingRepositoryPort ratingRepository;

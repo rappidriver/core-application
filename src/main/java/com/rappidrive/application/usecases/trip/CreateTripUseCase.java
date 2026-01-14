@@ -18,9 +18,6 @@ import com.rappidrive.domain.valueobjects.TripId;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 
-/**
- * Use case for creating a new trip.
- */
 public class CreateTripUseCase implements CreateTripInputPort {
 
     private final TripRepositoryPort tripRepository;

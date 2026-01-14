@@ -8,9 +8,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
 
-/**
- * Use case for getting a driver by ID.
- */
 public class GetDriverUseCase implements GetDriverInputPort {
     
     private final DriverRepositoryPort driverRepository;

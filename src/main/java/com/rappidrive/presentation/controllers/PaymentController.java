@@ -20,9 +20,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * REST Controller for payment management.
- */
 @RestController
 @RequestMapping("/api/v1/payments")
 public class PaymentController {
@@ -42,27 +39,18 @@ public class PaymentController {
         this.mapper = mapper;
     }
     
-    /**
-     * POST /api/v1/payments - Processes a payment
-     */
     @PostMapping
     public ResponseEntity<PaymentResponse> processPayment(@Valid @RequestBody ProcessPaymentRequest request) {
         Payment payment = processPaymentUseCase.execute(mapper.toCommand(request));
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(payment));
     }
     
-    /**
-     * GET /api/v1/payments/{id} - Gets payment by ID
-     */
     @GetMapping("/{id}")
     public ResponseEntity<PaymentResponse> getPayment(@PathVariable UUID id) {
         Payment payment = getPaymentUseCase.execute(id);
         return ResponseEntity.ok(mapper.toResponse(payment));
     }
     
-    /**
-     * GET /api/v1/payments/trip/{tripId} - Gets payment by trip ID
-     */
     @GetMapping("/trip/{tripId}")
     public ResponseEntity<PaymentResponse> getPaymentByTrip(@PathVariable UUID tripId) {
         List<Payment> payments = getPaymentUseCase.findByTrip(tripId);
@@ -72,9 +60,6 @@ public class PaymentController {
         return ResponseEntity.ok(mapper.toResponse(payments.get(0)));
     }
     
-    /**
-     * GET /api/v1/payments/tenant/{tenantId}/period - Lists payments by tenant and date range
-     */
     @GetMapping("/tenant/{tenantId}/period")
     public ResponseEntity<List<PaymentResponse>> getPaymentsByTenantAndPeriod(
             @PathVariable UUID tenantId,
@@ -88,9 +73,6 @@ public class PaymentController {
         return ResponseEntity.ok(response);
     }
     
-    /**
-     * POST /api/v1/payments/refund - Refunds a payment
-     */
     @PostMapping("/refund")
     public ResponseEntity<PaymentResponse> refundPayment(@Valid @RequestBody RefundPaymentRequest request) {
         Payment payment = refundPaymentUseCase.execute(request.paymentId(), request.reason());

@@ -15,9 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Use case para enviar notificações com idempotência.
- */
 public class SendNotificationUseCase implements SendNotificationInputPort {
     
     private final NotificationRepositoryPort notificationRepository;
@@ -57,25 +54,21 @@ public class SendNotificationUseCase implements SendNotificationInputPort {
     }
 
     private Notification doSend(SendNotificationCommand command) {
-        // 1. Verificar idempotência (evitar duplicatas)
         if (command.idempotencyKey() != null && !command.idempotencyKey().isBlank()) {
             Optional<Notification> existing = notificationRepository
                 .findByIdempotencyKey(command.idempotencyKey(), command.tenantId());
             
             if (existing.isPresent()) {
-                // Log: "Duplicate notification prevented for key: " + command.idempotencyKey()
                 return existing.get();
             }
         }
         
-        // 2. Criar conteúdo da notificação
         NotificationContent content = NotificationContent.of(
             command.title(),
             command.message(),
             command.data()
         );
         
-        // 3. Criar entidade Notification
         Notification notification = Notification.create(
             command.userId(),
             command.type(),
@@ -84,10 +77,8 @@ public class SendNotificationUseCase implements SendNotificationInputPort {
             command.idempotencyKey()
         );
         
-        // 4. Salvar no repositório
         Notification savedNotification = notificationRepository.save(notification);
         
-        // 5. Enviar push notification (se prioridade permite)
         if (savedNotification.getPriority().shouldSendPush() && notificationService.isAvailable()) {
             boolean sent = notificationService.sendPushNotification(savedNotification);
             if (sent) {

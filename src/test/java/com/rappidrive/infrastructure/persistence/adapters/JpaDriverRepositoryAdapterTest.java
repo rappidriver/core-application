@@ -32,40 +32,27 @@ class JpaDriverRepositoryAdapterTest {
 
     @Test
     void shouldFindDriversWithinRadiusUsingIndexes() {
-        // Note: This test requires PostGIS extension in PostgreSQL
-        // Skip if PostGIS not available
-        // Given
-        Location pickupLocation = new Location(40.7128, -74.0060); // Example: New York City
+        Location pickupLocation = new Location(40.7128, -74.0060);
         double radiusKm = 5.0;
-        TenantId tenantId = new TenantId(UUID.randomUUID()); // Fix: Use UUID instead of String
+        TenantId tenantId = new TenantId(UUID.randomUUID());
 
-        // When
         try {
             List<Driver> drivers = repositoryAdapter.findAvailableDriversNearby(pickupLocation, radiusKm, tenantId);
-
-            // Then
             assertThat(drivers).isNotEmpty();
         } catch (Exception e) {
-            // PostGIS not available in test DB
             System.out.println("PostGIS test skipped: " + e.getMessage());
         }
     }
 
     @Test
     void shouldLogQueryPerformance() {
-        // Note: This test requires PostGIS extension in PostgreSQL
-        // Given
         Location pickupLocation = new Location(40.7128, -74.0060);
         double radiusKm = 10.0;
-        TenantId tenantId = new TenantId(UUID.randomUUID()); // Fix: Use UUID instead of String
+        TenantId tenantId = new TenantId(UUID.randomUUID());
 
-        // When
         try {
             repositoryAdapter.findAvailableDriversNearby(pickupLocation, radiusKm, tenantId);
-            // Then
-            // Verify logs manually or use a logging framework to capture and assert logs
         } catch (Exception e) {
-            // PostGIS not available in test DB
             System.out.println("PostGIS test skipped: " + e.getMessage());
         }
     }

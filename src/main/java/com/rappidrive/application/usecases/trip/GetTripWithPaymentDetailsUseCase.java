@@ -11,9 +11,6 @@ import com.rappidrive.domain.exceptions.TripNotFoundException;
 
 import java.util.UUID;
 
-/**
- * Use case for retrieving trip details with associated fare and payment information.
- */
 public class GetTripWithPaymentDetailsUseCase implements GetTripWithPaymentDetailsInputPort {
     
     private final TripRepositoryPort tripRepository;

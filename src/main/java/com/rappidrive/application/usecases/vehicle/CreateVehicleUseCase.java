@@ -20,14 +20,12 @@ public class CreateVehicleUseCase implements CreateVehicleInputPort {
     
     @Override
     public Vehicle execute(CreateVehicleCommand command) {
-        // Validar placa única no tenant
         if (vehicleRepository.existsByLicensePlate(command.licensePlate(), command.tenantId())) {
             throw InvalidVehicleStateException.duplicateLicensePlate(
                 command.licensePlate().getValue()
             );
         }
         
-        // Criar veículo (status INACTIVE, sem motorista)
         Vehicle vehicle = new Vehicle(
             UUID.randomUUID(),
             command.tenantId(),

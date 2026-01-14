@@ -50,11 +50,9 @@ public class CompleteTripWithPaymentUseCase implements CompleteTripWithPaymentIn
     
     @Override
     public TripCompletionResult execute(CompleteTripWithPaymentCommand command) {
-        // 1. Retrieve trip
         Trip trip = tripRepository.findById(command.tripId())
             .orElseThrow(() -> new TripNotFoundException(command.tripId()));
         
-        // 2. Validate trip can be completed
         completionService.validateCanComplete(trip, command.dropoffLocation());
         
         // Check if fare already exists (idempotency)
@@ -62,24 +60,20 @@ public class CompleteTripWithPaymentUseCase implements CompleteTripWithPaymentIn
             return handleExistingCompletion(trip);
         }
         
-        // 3. Calculate actual distance using PostGIS
         double actualDistanceKm = distanceCalculation.calculateDistance(
             trip.getOrigin(),
             command.dropoffLocation()
         );
         
-        // Ensure minimum distance
         actualDistanceKm = completionService.calculateActualDistance(
             trip.getOrigin(),
             command.dropoffLocation()
         );
         
-        // 4. Calculate actual duration
         int actualDurationMinutes = completionService.calculateActualDuration(
             trip.getStartedAt().orElseThrow()
         );
         
-        // 5. Calculate fare
         Fare fare = calculateFare.execute(
             new CalculateFareInputPort.CalculateFareCommand(
                 trip.getId().getValue(),
@@ -91,10 +85,8 @@ public class CompleteTripWithPaymentUseCase implements CompleteTripWithPaymentIn
             )
         );
         
-        // 6. Save fare
         fare = fareRepository.save(fare);
         
-        // 7. Process payment
         Payment payment;
         boolean paymentSuccessful;
         String failureReason = null;
@@ -116,13 +108,10 @@ public class CompleteTripWithPaymentUseCase implements CompleteTripWithPaymentIn
             throw e; // For now, propagate exception
         }
         
-        // 8. Validate fare and payment consistency
         completionService.validateFareAndPayment(fare, payment);
         
-        // 9. Complete trip with fare and payment
         trip.completeWithPayment(fare, payment);
         
-        // 10. Save updated trip
         trip = tripRepository.save(trip);
         
         return new TripCompletionResult(

@@ -6,17 +6,8 @@ import com.rappidrive.domain.entities.Trip;
 
 import java.util.UUID;
 
-/**
- * Input port for retrieving trip details with associated fare and payment.
- */
 public interface GetTripWithPaymentDetailsInputPort {
     
-    /**
-     * Executes the query to get trip with payment details.
-     * 
-     * @param tripId trip unique identifier
-     * @return trip details with fare and payment
-     */
     TripWithPaymentDetails execute(UUID tripId);
     
     /**

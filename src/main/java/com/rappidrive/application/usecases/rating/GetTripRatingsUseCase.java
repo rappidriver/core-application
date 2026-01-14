@@ -8,9 +8,6 @@ import com.rappidrive.domain.enums.RatingType;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Use case para obter avaliações de uma viagem.
- */
 public class GetTripRatingsUseCase implements GetTripRatingsInputPort {
     
     private final RatingRepositoryPort ratingRepository;

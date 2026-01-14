@@ -178,8 +178,6 @@ public class Vehicle {
         if (color == null || color.isBlank()) {
             throw new IllegalArgumentException("Color cannot be null or empty");
         }
-        // Não pode modificar this.color pois é final
-        // Este método seria usado em um caso de uso que cria um novo objeto
         this.updatedAt = LocalDateTime.now();
     }
     

@@ -1,0 +1,247 @@
+{
+  "realm": "rappidrive-test",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": false,
+  "accessTokenLifespan": 3600,
+  "refreshTokenMaxReuse": 0,
+  "clients": [
+    {
+      "clientId": "rappidrive-api",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "test-secret",
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "protocol": "openid-connect",
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "defaultClientScopes": ["web-origins", "acr", "profile", "roles", "email"],
+      "optionalClientScopes": ["address", "phone", "offline_access", "microprofile-jwt"]
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "email",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "email",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "email",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "email verified",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "emailVerified",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "email_verified",
+            "jsonType.label": "boolean"
+          }
+        }
+      ]
+    },
+    {
+      "name": "profile",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "preferred_username",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "full name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-full-name-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "roles",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "client roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-client-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "resource_access.${client_id}.roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "DRIVER",
+        "description": "Driver role for ride-hailing drivers"
+      },
+      {
+        "name": "PASSENGER",
+        "description": "Passenger role for ride requesters"
+      },
+      {
+        "name": "ADMIN",
+        "description": "Admin role for administrative operations"
+      }
+    ],
+    "client": {
+      "rappidrive-api": [
+        {
+          "name": "SUPER_ADMIN",
+          "description": "Super admin with full permissions"
+        },
+        {
+          "name": "COMPLIANCE_OFFICER",
+          "description": "Compliance officer for driver approvals"
+        },
+        {
+          "name": "SUPPORT_ADMIN",
+          "description": "Support admin with read-only permissions"
+        }
+      ]
+    }
+  },
+  "users": [
+    {
+      "username": "driver-test",
+      "enabled": true,
+      "email": "driver@test.com",
+      "firstName": "Test",
+      "lastName": "Driver",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "driver123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["DRIVER"],
+      "attributes": {
+        "cpf": ["12345678909"],
+        "phone": ["+5511999999999"],
+        "licenseNumber": ["12345678901"]
+      }
+    },
+    {
+      "username": "passenger-test",
+      "enabled": true,
+      "email": "passenger@test.com",
+      "firstName": "Test",
+      "lastName": "Passenger",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "passenger123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["PASSENGER"],
+      "attributes": {
+        "cpf": ["98765432100"],
+        "phone": ["+5511988888888"]
+      }
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "username": "admin-test",
+      "enabled": true,
+      "email": "admin@test.com",
+      "firstName": "Test",
+      "lastName": "Admin",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ADMIN"],
+      "clientRoles": {
+        "rappidrive-api": ["SUPER_ADMIN"]
+      }
+    }
+  ],
+  "browserFlow": "browser",
+  "directGrantFlow": "direct grant",
+  "clientAuthenticationFlow": "clients",
+  "attributes": {
+    "frontendUrl": "",
+    "acr.loa.map": "{}"
+  }
+}

@@ -16,10 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * JPA adapter implementation of TripRepositoryPort.
- * This adapter converts between domain entities and JPA entities.
- */
 @Component
 @RequiredArgsConstructor
 public class JpaTripRepositoryAdapter implements TripRepositoryPort {
@@ -35,26 +31,22 @@ public class JpaTripRepositoryAdapter implements TripRepositoryPort {
         TripJpaEntity entity;
         
         if (trip.getId() != null) {
-            // Update existing
             entity = jpaRepository.findById(trip.getId().getValue())
                 .orElseGet(() -> mapper.toJpaEntity(trip));
             mapper.updateJpaEntity(entity, trip);
         } else {
-            // Create new
             entity = mapper.toJpaEntity(trip);
         }
         
         try {
             TripJpaEntity saved = jpaRepository.save(entity);
 
-            // Drain domain events collected during the use case execution and persist them to outbox
             try {
                 java.util.List<com.rappidrive.domain.events.DomainEvent> events = com.rappidrive.domain.events.DomainEventsCollector.instance().drain();
                 java.time.LocalDateTime now = java.time.LocalDateTime.now();
                 String traceId = currentTraceId();
                 String spanId = currentSpanId();
                 for (com.rappidrive.domain.events.DomainEvent event : events) {
-                    // Determine aggregate id (prefer explicit tripId if available)
                     java.util.UUID aggregateId = extractAggregateId(event, saved);
                     String payload = objectMapper.writeValueAsString(event);
                     com.rappidrive.domain.outbox.OutboxEvent outboxEvent = new com.rappidrive.domain.outbox.OutboxEvent(
@@ -77,7 +69,6 @@ public class JpaTripRepositoryAdapter implements TripRepositoryPort {
 
             return mapper.toDomain(saved);
         } catch (org.springframework.dao.OptimisticLockingFailureException e) {
-            // Translate infrastructure exception to a domain-level concurrency exception
             throw new com.rappidrive.domain.exceptions.TripConcurrencyException(
                 "Concurrent modification detected for trip: " + (trip.getId() != null ? trip.getId().getValue() : "unknown"),
                 e

@@ -6,9 +6,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-/**
- * Health check endpoint to verify application is running.
- */
 @RestController
 @RequestMapping("/api")
 public class HealthController {

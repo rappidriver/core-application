@@ -90,7 +90,6 @@ class TripE2ETest {
         String passengerId = createPassenger("lifecycle@example.com");
         String driverId = createDriverWithActiveVehicle("driver.lifecycle@example.com", "LFC1A23");
 
-        // Step 1: Create a trip
         String tripId = given()
             .contentType(ContentType.JSON)
             .body(createTripPayload(passengerId))
@@ -102,7 +101,6 @@ class TripE2ETest {
             .extract()
             .path("id");
 
-        // Step 2: Assign driver
         given()
             .contentType(ContentType.JSON)
             .body(new AssignDriverPayload(driverId))
@@ -113,7 +111,6 @@ class TripE2ETest {
             .body("status", equalTo("DRIVER_ASSIGNED"))
             .body("driverId", equalTo(driverId));
 
-        // Step 3: Start trip
         given()
             .when()
             .put("/api/v1/trips/{id}/start", tripId)
@@ -121,7 +118,6 @@ class TripE2ETest {
             .statusCode(200)
             .body("status", equalTo("IN_PROGRESS"));
 
-        // Step 4: Complete trip
         given()
             .when()
             .put("/api/v1/trips/{id}/complete", tripId)
@@ -439,10 +435,6 @@ class TripE2ETest {
             .when()
             .put("/api/v1/drivers/{id}/activate", driverId);
         
-        if (activateResponse.statusCode() != 200) {
-            System.out.println("ACTIVATE DRIVER FAILED: " + activateResponse.statusCode());
-            System.out.println("RESPONSE: " + activateResponse.body().asString());
-        }
         activateResponse.then().statusCode(200);
 
         // Update driver location (required to be available for rides)
@@ -453,10 +445,6 @@ class TripE2ETest {
             .when()
             .put("/api/v1/drivers/{id}/location", driverId);
         
-        if (locationResponse.statusCode() != 200) {
-            System.out.println("UPDATE LOCATION FAILED: " + locationResponse.statusCode());
-            System.out.println("RESPONSE: " + locationResponse.body().asString());
-        }
         locationResponse.then().statusCode(200);
 
         return driverId;

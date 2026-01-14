@@ -14,9 +14,6 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Adapter implementing FareConfigurationRepositoryPort using JPA.
- */
 @Component
 public class JpaFareConfigurationRepositoryAdapter implements FareConfigurationRepositoryPort {
     

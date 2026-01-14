@@ -16,10 +16,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Use case responsible for submitting a driver's documents for approval.
- * Creates a new DriverApproval aggregate, persists it, and publishes a domain event.
- */
 public class SubmitDriverApprovalUseCase implements SubmitDriverApprovalInputPort {
 
     private static final int MIN_DOCUMENTS = 2;

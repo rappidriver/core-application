@@ -11,9 +11,6 @@ import com.rappidrive.domain.services.RatingValidationService;
 import com.rappidrive.domain.valueobjects.RatingComment;
 import com.rappidrive.domain.valueobjects.RatingScore;
 
-/**
- * Use case para criar avaliação.
- */
 public class CreateRatingUseCase implements CreateRatingInputPort {
     
     private final RatingRepositoryPort ratingRepository;
@@ -32,16 +29,13 @@ public class CreateRatingUseCase implements CreateRatingInputPort {
     
     @Override
     public Rating execute(CreateRatingCommand command) {
-        // 1. Buscar viagem
         Trip trip = tripRepository.findById(command.tripId())
             .orElseThrow(() -> new TripNotFoundException(
                 String.format("Viagem %s não encontrada", command.tripId())
             ));
         
-        // 2. Validar se viagem pode ser avaliada (COMPLETED, dentro do prazo)
         validationService.validateCanRate(trip);
         
-        // 3. Validar se não existe avaliação duplicada
         boolean alreadyExists = ratingRepository.existsByTripIdAndRaterIdAndType(
             command.tripId(),
             command.raterId(),
@@ -54,7 +48,6 @@ public class CreateRatingUseCase implements CreateRatingInputPort {
             alreadyExists
         );
         
-        // 4. Criar rating
         RatingScore score = RatingScore.of(command.score());
         RatingComment comment = RatingComment.of(command.comment());
         
@@ -68,7 +61,6 @@ public class CreateRatingUseCase implements CreateRatingInputPort {
             trip.getTenantId()
         );
         
-        // 5. Salvar
         return ratingRepository.save(rating);
     }
 }

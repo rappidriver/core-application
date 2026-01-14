@@ -120,18 +120,38 @@ CREATE TABLE IF NOT EXISTS notification (
     sent_at TIMESTAMP
 );
 
--- V10: Outbox Event table (for reliable event publishing)
-CREATE TABLE IF NOT EXISTS outbox_event (
+-- V15: Admin users and driver approvals
+CREATE TABLE IF NOT EXISTS admin_users (
     id UUID PRIMARY KEY,
-    aggregate_id UUID NOT NULL,
-    event_type VARCHAR(255) NOT NULL,
-    payload JSONB NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
-    attempts INT NOT NULL DEFAULT 0,
-    next_attempt_at TIMESTAMP,
-    created_at TIMESTAMP NOT NULL DEFAULT now(),
-    sent_at TIMESTAMP
+    tenant_id UUID NOT NULL REFERENCES tenant(id),
+    email VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    full_name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (tenant_id, email)
 );
+
+CREATE TABLE IF NOT EXISTS driver_approvals (
+    id UUID PRIMARY KEY,
+    driver_id UUID NOT NULL REFERENCES driver(id),
+    tenant_id UUID NOT NULL REFERENCES tenant(id),
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    submitted_documents TEXT NOT NULL,
+    submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    reviewed_at TIMESTAMP,
+    reviewed_by_admin_id UUID REFERENCES admin_users(id),
+    rejection_reason TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert test tenant
+INSERT INTO tenants (id, name, slug) VALUES ('550e8400-e29b-41d4-a716-446655440000', 'Test Tenant', 'test-tenant') ON CONFLICT DO NOTHING;
+
+-- Insert test admin user (matches Keycloak admin-test user)
+INSERT INTO admin_users (id, tenant_id, email, role, full_name) 
+VALUES ('550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440000', 'admin@test.com', 'SUPER_ADMIN', 'Test Admin') 
+ON CONFLICT DO NOTHING;
 
 -- Create indexes for efficient queries
 CREATE INDEX IF NOT EXISTS idx_driver_tenant_id ON driver(tenant_id);

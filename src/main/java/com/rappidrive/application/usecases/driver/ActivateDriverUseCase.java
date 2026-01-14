@@ -8,9 +8,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
 
-/**
- * Use case for activating a driver.
- */
 public class ActivateDriverUseCase implements ActivateDriverInputPort {
     
     private final DriverRepositoryPort driverRepository;

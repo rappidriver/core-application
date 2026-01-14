@@ -15,9 +15,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Adapter JPA para repositório de avaliações.
- */
 @Component
 public class JpaRatingRepositoryAdapter implements RatingRepositoryPort {
     

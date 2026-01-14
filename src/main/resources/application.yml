@@ -30,6 +30,13 @@ spring:
       size: 4
       thread-name-prefix: rabbidrive-scheduler-
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/rappidrive-test}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8180/realms/rappidrive-test/protocol/openid-connect/certs}
+
 outbox:
   processor:
     enabled: true
@@ -90,6 +97,9 @@ resilience4j:
         maxAttempts: 3
         waitDuration: 2s
 
-security:
-  jwt:
-    secret: change-me-please-change-me-please-change-me-please
+keycloak:
+  auth-server-url: ${KEYCLOAK_SERVER_URL:http://localhost:8180}
+  realm: ${KEYCLOAK_REALM:rappidrive-test}
+  resource: ${KEYCLOAK_CLIENT_ID:rappidrive-api}
+  credentials:
+    secret: ${KEYCLOAK_CLIENT_SECRET:test-secret}

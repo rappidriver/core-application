@@ -8,9 +8,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
 
-/**
- * Use case for starting a trip.
- */
 public class StartTripUseCase implements StartTripInputPort {
     
     private final TripRepositoryPort tripRepository;
