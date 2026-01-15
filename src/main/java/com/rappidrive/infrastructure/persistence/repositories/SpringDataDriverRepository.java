@@ -56,12 +56,12 @@ public interface SpringDataDriverRepository extends JpaRepository<DriverJpaEntit
           AND d.location_latitude IS NOT NULL
           AND d.location_longitude IS NOT NULL
           AND ST_DWithin(
-              ST_SetSRID(ST_MakePoint(d.location_longitude, d.location_latitude), 4326)::geography,
-              ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography,
+              CAST(ST_SetSRID(ST_MakePoint(d.location_longitude, d.location_latitude), 4326) AS geography),
+              CAST(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326) AS geography),
               :radiusMeters
           )
-        ORDER BY ST_SetSRID(ST_MakePoint(d.location_longitude, d.location_latitude), 4326) <-> 
-                 ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)
+        ORDER BY CAST(ST_SetSRID(ST_MakePoint(d.location_longitude, d.location_latitude), 4326) AS geography) <-> 
+                 CAST(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326) AS geography)
         LIMIT 10
         """, nativeQuery = true)
     List<DriverJpaEntity> findDriversWithinRadius(

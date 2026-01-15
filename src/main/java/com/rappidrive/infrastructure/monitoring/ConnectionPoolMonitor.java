@@ -7,6 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Monitors HikariCP connection pool metrics and logs warnings when pool is under stress.
  * Helps identify connection pool bottlenecks in high concurrency scenarios with virtual threads.
@@ -15,6 +18,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 public class ConnectionPoolMonitor {
+    
+    private static final Logger log = LoggerFactory.getLogger(ConnectionPoolMonitor.class);
     
     private final HikariDataSource dataSource;
     

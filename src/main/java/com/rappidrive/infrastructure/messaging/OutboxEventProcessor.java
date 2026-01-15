@@ -10,6 +10,8 @@ import io.micrometer.tracing.TraceContext;
 import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,6 +31,8 @@ import java.util.List;
     matchIfMissing = true
 )
 public class OutboxEventProcessor {
+    
+    private static final Logger log = LoggerFactory.getLogger(OutboxEventProcessor.class);
 
     private final OutboxRepositoryPort outboxRepository;
     private final EventDispatcherPort eventDispatcher;

@@ -8,6 +8,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Async configuration using Virtual Threads.
@@ -19,6 +21,8 @@ import java.util.concurrent.Executors;
 @Configuration
 @EnableAsync
 public class AsyncConfiguration implements AsyncConfigurer {
+    
+    private static final Logger log = LoggerFactory.getLogger(AsyncConfiguration.class);
     
     @Override
     public Executor getAsyncExecutor() {

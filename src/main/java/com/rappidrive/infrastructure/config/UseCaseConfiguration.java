@@ -5,6 +5,7 @@ import com.rappidrive.application.ports.input.notification.*;
 import com.rappidrive.application.ports.input.passenger.*;
 import com.rappidrive.application.ports.input.payment.*;
 import com.rappidrive.application.ports.input.rating.*;
+import com.rappidrive.application.ports.input.tenant.*;
 import com.rappidrive.application.ports.input.trip.*;
 import com.rappidrive.application.ports.input.vehicle.*;
 import com.rappidrive.application.ports.input.ApproveDriverInputPort;
@@ -19,6 +20,7 @@ import com.rappidrive.application.usecases.notification.*;
 import com.rappidrive.application.usecases.passenger.*;
 import com.rappidrive.application.usecases.payment.*;
 import com.rappidrive.application.usecases.rating.*;
+import com.rappidrive.application.usecases.tenant.*;
 import com.rappidrive.application.usecases.trip.*;
 import com.rappidrive.application.usecases.vehicle.*;
 import com.rappidrive.application.usecases.approval.*;
@@ -335,5 +337,17 @@ public class UseCaseConfiguration {
             AdminUserRepositoryPort adminRepository,
             DriverRepositoryPort driverRepository) {
         return new RejectDriverUseCase(approvalRepository, adminRepository, driverRepository);
+    }
+
+    // Tenant Management Use Cases
+
+    @Bean
+    public OnboardNewTenantInputPort onboardNewTenantUseCase(
+            ServiceAreaRepositoryPort serviceAreaRepository,
+            FareConfigurationRepositoryPort fareConfigRepository,
+            IdentityProvisioningPort identityProvisioning,
+            com.rappidrive.application.ports.output.TenantRepositoryPort tenantRepository) {
+        return new OnboardNewTenantUseCase(serviceAreaRepository, fareConfigRepository,
+                identityProvisioning, tenantRepository);
     }
 }
