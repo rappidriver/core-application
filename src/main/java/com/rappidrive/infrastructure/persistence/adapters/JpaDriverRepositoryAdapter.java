@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * JPA adapter implementation of DriverRepositoryPort and DriverGeoQueryPort.
@@ -30,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 @Slf4j
 public class JpaDriverRepositoryAdapter implements DriverRepositoryPort, DriverGeoQueryPort {
+    
+    private static final Logger log = LoggerFactory.getLogger(JpaDriverRepositoryAdapter.class);
     
     private final SpringDataDriverRepository jpaRepository;
     private final DriverMapper mapper;
