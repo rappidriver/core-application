@@ -1,6 +1,7 @@
 package com.rappidrive.infrastructure.persistence.entities;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -16,6 +17,7 @@ import java.util.UUID;
         @Index(name = "idx_service_area_tenant_id", columnList = "tenant_id"),
         @Index(name = "idx_service_area_active", columnList = "active")
 })
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 public class ServiceAreaJpaEntity {
     
     @Id

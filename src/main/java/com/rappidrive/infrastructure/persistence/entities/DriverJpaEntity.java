@@ -7,6 +7,7 @@ import com.rappidrive.domain.valueobjects.Phone;
 import com.rappidrive.domain.valueobjects.TenantId;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Filter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "drivers")
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 @Builder
 public class DriverJpaEntity {
 

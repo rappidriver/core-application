@@ -1,6 +1,7 @@
 package com.rappidrive.infrastructure.persistence.entities;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ import java.util.UUID;
 @Table(name = "fare_configurations", indexes = {
     @Index(name = "idx_fare_config_tenant", columnList = "tenant_id", unique = true)
 })
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 public class FareConfigurationJpaEntity {
     
     @Id

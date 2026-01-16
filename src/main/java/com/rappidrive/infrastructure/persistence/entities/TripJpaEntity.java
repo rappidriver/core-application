@@ -4,6 +4,9 @@ import com.rappidrive.domain.enums.TripStatus;
 import com.rappidrive.domain.valueobjects.TenantId;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,6 +18,8 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "trips")
+@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = UUID.class))
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 @Builder
 public class TripJpaEntity {
 

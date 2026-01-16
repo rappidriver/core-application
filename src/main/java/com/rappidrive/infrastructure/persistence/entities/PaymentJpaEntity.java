@@ -3,6 +3,7 @@ package com.rappidrive.infrastructure.persistence.entities;
 import com.rappidrive.domain.enums.PaymentMethodType;
 import com.rappidrive.domain.enums.PaymentStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,6 +21,7 @@ import java.util.UUID;
     @Index(name = "idx_payment_status", columnList = "status"),
     @Index(name = "idx_payment_gateway_transaction", columnList = "gateway_transaction_id")
 })
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 public class PaymentJpaEntity {
     
     @Id

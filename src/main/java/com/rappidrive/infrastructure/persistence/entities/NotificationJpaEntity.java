@@ -1,6 +1,7 @@
 package com.rappidrive.infrastructure.persistence.entities;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.Type;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ import java.util.UUID;
         @UniqueConstraint(name = "uk_notifications_idempotency_key", columnNames = "idempotency_key")
     }
 )
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 public class NotificationJpaEntity {
     
     @Id

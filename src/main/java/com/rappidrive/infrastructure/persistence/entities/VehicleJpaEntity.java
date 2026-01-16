@@ -3,6 +3,7 @@ package com.rappidrive.infrastructure.persistence.entities;
 import com.rappidrive.domain.enums.VehicleStatus;
 import com.rappidrive.domain.enums.VehicleType;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -18,6 +19,7 @@ import java.util.UUID;
     @Index(name = "idx_vehicles_tenant", columnList = "tenant_id"),
     @Index(name = "idx_vehicles_status_tenant", columnList = "status,tenant_id")
 })
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 public class VehicleJpaEntity {
     
     @Id

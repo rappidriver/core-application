@@ -1,6 +1,7 @@
 package com.rappidrive.infrastructure.persistence.entities;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -21,6 +22,7 @@ import java.util.UUID;
         @UniqueConstraint(name = "uq_ratings_trip_rater_type", columnNames = {"trip_id", "rater_id", "type"})
     }
 )
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 public class RatingJpaEntity {
     
     @Id

@@ -6,6 +6,7 @@ import com.rappidrive.domain.valueobjects.Phone;
 import com.rappidrive.domain.valueobjects.TenantId;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Filter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "passengers")
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 @Builder
 public class PassengerJpaEntity {
 
